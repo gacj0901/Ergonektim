@@ -8,7 +8,11 @@ version = "0.1.0.dev0"
 description = "Bilingual aptadynamic viability assessment for electric power systems"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+dependencies = [
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "prama-protokol==0.3.0",
+]
 authors = [{ name = "G.A.C.J." }]
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",

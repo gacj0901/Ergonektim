@@ -8,7 +8,7 @@ ERGONEKTIM is an auditable bilingual product that converts causal electrical obs
 
 ## Current status
 
-`0.1.0.dev0` — product-contract construction. No real-time operational or predictive claim is made.
+`0.1.0.dev0` — executable product-contract construction. No real-time operational or predictive claim is made.
 
 The current milestone provides:
 
@@ -16,9 +16,13 @@ The current milestone provides:
 - the [diagnostic glossary](GLOSSARY.md);
 - a canonical bilingual diagnostic-signal contract;
 - English and Spanish status catalogs; and
-- executable parity and invariant tests.
+- one causal, fail-closed execution path for all six observers;
+- a hash-verified binding to PRAMA Protokol `0.3.0` and its numeric recertification artifact; and
+- executable parity, ledger, gating, and attribution-invariant tests.
 
 The universal state machine is supplied by a declared certified release of PRAMA Protokol. ERGONEKTIM contains the electrical realization and does not maintain a divergent kernel copy.
+
+A canonical assessment embeds the PRAMA version, the Python kernel hash, the numeric-recertification hash, and the result of every binding check. A version string alone is insufficient.
 
 ## Diagnostic panel
 
@@ -32,6 +36,16 @@ ERGONEKTIM preserves six separate observer outputs:
 6. Estimation Fidelity.
 
 No global scalar or overall traffic light is emitted.
+
+## One-run verification
+
+With the certified PRAMA Protokol `0.3.0` package installed, the complete synthetic fixture is evaluated with:
+
+```console
+python examples/run_synthetic_assessment.py --recertification PATH/TO/v0_3_0_numeric_recertification.json --output assessment.json
+```
+
+The command writes one deterministic JSON artifact containing the state trajectory, all six observer outputs, both language presentations, source contracts, invariants, and the complete kernel-certification binding. The fixture contains no real data and supports verification only.
 
 ## Development boundary
 
