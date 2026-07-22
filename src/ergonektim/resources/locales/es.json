@@ -1,0 +1,173 @@
+{
+  "schema_version": "ergonektim.locale.v1",
+  "locale": "es",
+  "language_name": "Español",
+  "observers": {
+    "causal_link": {
+      "name": "Vínculo causal",
+      "claim_boundary": "La contribución de señal dominante no demuestra por sí misma causalidad física completa.",
+      "statuses": {
+        "instrument_indeterminate": {
+          "label": "Origen no determinable",
+          "explanation": "La cobertura o el contrato externo de atribución son insuficientes.",
+          "review_action": "Revisar la validez de componentes, las etiquetas independientes y el contrato de desplazamiento externo."
+        },
+        "joint": {
+          "label": "Contribución conjunta",
+          "explanation": "Los brazos interno y ambiental contribuyen por igual, dentro de tolerancia, al aumento de la discrepancia.",
+          "review_action": "Examinar ambas vías de contribución sin imponer una explicación de fuente única."
+        },
+        "no_new_deterioration": {
+          "label": "Sin deterioro nuevo",
+          "explanation": "La discrepancia local no aumentó respecto de la observación elegible anterior.",
+          "review_action": "Continuar observando; no se emite una nueva atribución para esta transición."
+        },
+        "phi_internal": {
+          "label": "Señal interna dominante",
+          "explanation": "El registro interno contribuye más al aumento observado de la discrepancia.",
+          "review_action": "Revisar el registro interno u organizacional declarado y su procedencia."
+        },
+        "psi_environmental": {
+          "label": "Señal ambiental dominante",
+          "explanation": "El brazo de respuesta externa contribuye más al aumento observado de la discrepancia.",
+          "review_action": "Revisar el componente externo dominante, su referencia y la validez de la fuente."
+        }
+      }
+    },
+    "condition_report": {
+      "name": "Reporte de condición",
+      "claim_boundary": "El reporte describe la restitución del margen alrededor de un episodio planificado; no demuestra causalidad de la intervención.",
+      "statuses": {
+        "boundary_indeterminate": {
+          "label": "Ventana incompleta",
+          "explanation": "El episodio planificado carece de una ventana completa anterior o posterior para evaluarlo.",
+          "review_action": "Extender la ventana de observación antes de interpretar la restitución."
+        },
+        "instrument_indeterminate": {
+          "label": "Evidencia insuficiente",
+          "explanation": "La telemetría no permanece clara durante toda la ventana requerida del episodio.",
+          "review_action": "Resolver el intervalo en cuarentena o conservar el episodio como indeterminado."
+        },
+        "neutral_restitution": {
+          "label": "Restitución neutra",
+          "explanation": "La mediana posterior del margen es igual a la mediana anterior al episodio.",
+          "review_action": "Registrar el resultado neutro y revisar por separado la acumulación de mayor plazo."
+        },
+        "non_restitutive": {
+          "label": "Recuperación insuficiente",
+          "explanation": "La mediana posterior del margen permanece por debajo de su valor anterior al episodio.",
+          "review_action": "Revisar el drenaje no resuelto y la recuperación posterior sin alterar las ventanas congeladas."
+        },
+        "regenerative": {
+          "label": "Intervención regenerativa",
+          "explanation": "La mediana posterior del margen supera su valor anterior al episodio.",
+          "review_action": "Confirmar la persistencia del margen recuperado en la siguiente ventana elegible."
+        }
+      }
+    },
+    "estimation_fidelity": {
+      "name": "Fidelidad de estimación",
+      "claim_boundary": "La fidelidad mide concordancia con una representación declarada del operador, no la verdad física completa.",
+      "statuses": {
+        "critical_self_image": {
+          "label": "Representación en límite crítico",
+          "explanation": "La fidelidad normalizada de representación es cero dentro de la tolerancia numérica.",
+          "review_action": "Revisar la referencia del operador y la alineación de la escala del umbral."
+        },
+        "epistemically_saturated": {
+          "label": "Desacople de representación",
+          "explanation": "El error de representación supera el umbral endógeno actual.",
+          "review_action": "Auditar la representación externa, la normalización y la alineación temporal."
+        },
+        "faithful_self_image": {
+          "label": "Representación alineada",
+          "explanation": "El error de representación permanece por debajo del umbral endógeno actual.",
+          "review_action": "Continuar la comparación y conservar el registro de procedencia externa."
+        },
+        "instrument_indeterminate": {
+          "label": "Sin referencia del operador",
+          "explanation": "No existe una representación externa válida del operador para esta fila.",
+          "review_action": "Restaurar el contrato de representación externa; no reconstruirla desde el estado del kernel."
+        }
+      }
+    },
+    "performance_status": {
+      "name": "Estado de desempeño",
+      "claim_boundary": "Las señales de desempeño auditan regeneración y drenaje declarados; no son instrucciones de despacho o switching.",
+      "statuses": {
+        "balanced": {
+          "label": "Balance neutro",
+          "explanation": "La regeneración declarada es igual al drenaje estructural en este paso.",
+          "review_action": "Vigilar la persistencia porque un paso neutro no elimina la deuda acumulada."
+        },
+        "insolvent": {
+          "label": "Drenaje dominante",
+          "explanation": "El drenaje estructural supera la regeneración declarada.",
+          "review_action": "Revisar el libro mayor de drenaje, la fuente de regeneración y la duración del desequilibrio."
+        },
+        "instrument_indeterminate": {
+          "label": "Desempeño no determinable",
+          "explanation": "La cobertura de observación es insuficiente para el libro mayor de desempeño.",
+          "review_action": "Resolver el gate telemétrico antes de interpretar la solvencia."
+        },
+        "overoptimization_guard_triggered": {
+          "label": "Alerta de sobreoptimización",
+          "explanation": "El flujo efectivo aumentó mientras el margen de viabilidad disminuyó.",
+          "review_action": "Revisar la relación entre rendimiento y margen; esta señal no es una instrucción automática de control."
+        },
+        "solvent": {
+          "label": "Regeneración dominante",
+          "explanation": "La regeneración declarada supera el drenaje estructural.",
+          "review_action": "Verificar que el balance favorable persista y esté respaldado por datos de fuente válidos."
+        }
+      }
+    },
+    "stability_status": {
+      "name": "Estado de estabilidad",
+      "claim_boundary": "El estado describe el margen y la tendencia actuales; no es un teorema de estabilidad global ni una predicción de outage.",
+      "statuses": {
+        "collapsing": {
+          "label": "Viabilidad comprometida",
+          "explanation": "El margen actual es negativo o la máscara operacional declarada está inactiva en una fila observable.",
+          "review_action": "Revisar el umbral excedido, la máscara operacional y la persistencia de la condición."
+        },
+        "instrument_indeterminate": {
+          "label": "Estado no determinable",
+          "explanation": "El gate de observabilidad no permite inferir el estado de estabilidad.",
+          "review_action": "Restaurar cobertura suficiente antes de interpretar el margen o la tendencia."
+        },
+        "latent_collapse": {
+          "label": "Deterioro latente",
+          "explanation": "El margen permanece no negativo, pero su tendencia causal se deteriora.",
+          "review_action": "Revisar la persistencia de la tendencia y los canales que contribuyen a la tensión retenida."
+        },
+        "viable": {
+          "label": "Margen viable",
+          "explanation": "El margen es no negativo y su tendencia causal no se deteriora.",
+          "review_action": "Continuar vigilando; un estado actual favorable no implica ausencia de riesgo futuro."
+        }
+      }
+    },
+    "telemetric_status": {
+      "name": "Estado telemétrico",
+      "claim_boundary": "El estado telemétrico certifica visibilidad diagnóstica, no la salud física del sistema.",
+      "statuses": {
+        "instrument_indeterminate": {
+          "label": "Visibilidad insuficiente",
+          "explanation": "El intervalo causal de incertidumbre es demasiado ancho o los datos requeridos son inválidos.",
+          "review_action": "Examinar las razones de cuarentena y restaurar la cobertura de las fuentes."
+        },
+        "observability_clear": {
+          "label": "Observación confiable",
+          "explanation": "Las fuentes requeridas son válidas y la incertidumbre causal está dentro de la tolerancia declarada.",
+          "review_action": "Los observadores posteriores pueden evaluar esta fila bajo sus propios contratos."
+        },
+        "partially_observable_fail_closed": {
+          "label": "Cobertura parcial",
+          "explanation": "La evaluación contiene intervalos elegibles y otros en cuarentena.",
+          "review_action": "Usar solo intervalos despejados y conservar en el reporte cada intervalo excluido."
+        }
+      }
+    }
+  }
+}

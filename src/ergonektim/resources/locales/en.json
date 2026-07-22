@@ -1,0 +1,173 @@
+{
+  "schema_version": "ergonektim.locale.v1",
+  "locale": "en",
+  "language_name": "English",
+  "observers": {
+    "causal_link": {
+      "name": "Causal Link",
+      "claim_boundary": "Dominant signal contribution is not, by itself, proof of complete physical causation.",
+      "statuses": {
+        "instrument_indeterminate": {
+          "label": "Origin undetermined",
+          "explanation": "Coverage or an external attribution contract is insufficient.",
+          "review_action": "Review component validity, independent labels, and the external displacement contract."
+        },
+        "joint": {
+          "label": "Joint contribution",
+          "explanation": "Internal and environmental arms contribute equally within tolerance to the increased mismatch.",
+          "review_action": "Inspect both contribution paths without forcing a single-source explanation."
+        },
+        "no_new_deterioration": {
+          "label": "No new deterioration",
+          "explanation": "The local mismatch did not increase from the preceding eligible observation.",
+          "review_action": "Continue observation; no new attribution claim is emitted for this transition."
+        },
+        "phi_internal": {
+          "label": "Internal signal dominant",
+          "explanation": "The internal register contributes more to the observed mismatch increase.",
+          "review_action": "Review the declared internal or organizational register and its provenance."
+        },
+        "psi_environmental": {
+          "label": "Environmental signal dominant",
+          "explanation": "The external response arm contributes more to the observed mismatch increase.",
+          "review_action": "Review the dominant external component, reference, and source validity."
+        }
+      }
+    },
+    "condition_report": {
+      "name": "Condition Report",
+      "claim_boundary": "The report describes margin restitution around a declared planned episode; it does not prove intervention causality.",
+      "statuses": {
+        "boundary_indeterminate": {
+          "label": "Incomplete window",
+          "explanation": "The planned episode lacks a complete pre- or post-assessment window.",
+          "review_action": "Extend the observation window before interpreting restitution."
+        },
+        "instrument_indeterminate": {
+          "label": "Insufficient evidence",
+          "explanation": "Telemetry is not clear throughout the required episode window.",
+          "review_action": "Resolve the quarantined interval or retain the episode as indeterminate."
+        },
+        "neutral_restitution": {
+          "label": "Neutral restitution",
+          "explanation": "The post-episode median margin equals the pre-episode median margin.",
+          "review_action": "Record the neutral result and review longer-term accumulation separately."
+        },
+        "non_restitutive": {
+          "label": "Insufficient recovery",
+          "explanation": "The post-episode median margin remains below its pre-episode value.",
+          "review_action": "Review unresolved drain and subsequent recovery without altering the frozen windows."
+        },
+        "regenerative": {
+          "label": "Regenerative intervention",
+          "explanation": "The post-episode median margin exceeds its pre-episode value.",
+          "review_action": "Confirm persistence of the recovered margin in the following eligible window."
+        }
+      }
+    },
+    "estimation_fidelity": {
+      "name": "Estimation Fidelity",
+      "claim_boundary": "Fidelity measures agreement with a declared operator representation, not complete physical truth.",
+      "statuses": {
+        "critical_self_image": {
+          "label": "Representation at critical boundary",
+          "explanation": "Normalized representation fidelity is zero within numerical tolerance.",
+          "review_action": "Review the operator reference and the threshold-scale alignment."
+        },
+        "epistemically_saturated": {
+          "label": "Representation decoupling",
+          "explanation": "The representation error exceeds the current endogenous threshold.",
+          "review_action": "Audit the external representation, normalization, and timestamp alignment."
+        },
+        "faithful_self_image": {
+          "label": "Aligned representation",
+          "explanation": "The representation error remains smaller than the current endogenous threshold.",
+          "review_action": "Continue comparison and preserve the external provenance record."
+        },
+        "instrument_indeterminate": {
+          "label": "No operator reference",
+          "explanation": "A valid external operator representation is unavailable for this row.",
+          "review_action": "Restore the external representation contract; do not reconstruct it from kernel state."
+        }
+      }
+    },
+    "performance_status": {
+      "name": "Performance Status",
+      "claim_boundary": "Performance signals audit declared regeneration and drain; they are not dispatch or switching instructions.",
+      "statuses": {
+        "balanced": {
+          "label": "Neutral balance",
+          "explanation": "Declared regeneration equals structural drain for this step.",
+          "review_action": "Monitor persistence because a neutral step does not erase accumulated debt."
+        },
+        "insolvent": {
+          "label": "Drain-dominant",
+          "explanation": "Structural drain exceeds declared regeneration.",
+          "review_action": "Review the drain ledger, regeneration source, and duration of the imbalance."
+        },
+        "instrument_indeterminate": {
+          "label": "Performance undetermined",
+          "explanation": "Observation coverage is insufficient for the performance ledger.",
+          "review_action": "Resolve the telemetric gate before interpreting solvency."
+        },
+        "overoptimization_guard_triggered": {
+          "label": "Over-optimization alert",
+          "explanation": "Effective flow increased while the viability margin decreased.",
+          "review_action": "Review the throughput-margin tradeoff; this signal is not an automatic control instruction."
+        },
+        "solvent": {
+          "label": "Regeneration-dominant",
+          "explanation": "Declared regeneration exceeds structural drain.",
+          "review_action": "Verify that the favorable balance persists and is supported by valid source data."
+        }
+      }
+    },
+    "stability_status": {
+      "name": "Stability Status",
+      "claim_boundary": "The status describes current margin and trend; it is not a theorem of global stability or an outage prediction.",
+      "statuses": {
+        "collapsing": {
+          "label": "Compromised viability",
+          "explanation": "The current margin is negative or the declared operational mask is inactive on an observable row.",
+          "review_action": "Review the exceeded threshold, operational mask, and persistence of the condition."
+        },
+        "instrument_indeterminate": {
+          "label": "State undetermined",
+          "explanation": "The observability gate does not support a stability-status inference.",
+          "review_action": "Restore sufficient coverage before interpreting margin or trend."
+        },
+        "latent_collapse": {
+          "label": "Latent deterioration",
+          "explanation": "The margin remains nonnegative but its causal trend is deteriorating.",
+          "review_action": "Review trend persistence and the channels contributing to retained tension."
+        },
+        "viable": {
+          "label": "Viable margin",
+          "explanation": "The margin is nonnegative and its causal trend is not deteriorating.",
+          "review_action": "Continue monitoring; a favorable current state does not imply absence of future risk."
+        }
+      }
+    },
+    "telemetric_status": {
+      "name": "Telemetric Status",
+      "claim_boundary": "Telemetry status certifies diagnostic visibility, not physical-system health.",
+      "statuses": {
+        "instrument_indeterminate": {
+          "label": "Insufficient visibility",
+          "explanation": "The causal uncertainty interval is too wide or required source data are invalid.",
+          "review_action": "Inspect quarantine reasons and restore source coverage."
+        },
+        "observability_clear": {
+          "label": "Reliable observation",
+          "explanation": "Required sources are valid and causal uncertainty is within the declared tolerance.",
+          "review_action": "Downstream observers may evaluate this row under their own contracts."
+        },
+        "partially_observable_fail_closed": {
+          "label": "Partial coverage",
+          "explanation": "The assessment contains both eligible and quarantined intervals.",
+          "review_action": "Use only clear intervals and retain every excluded interval in the report."
+        }
+      }
+    }
+  }
+}

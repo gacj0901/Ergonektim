@@ -1,0 +1,160 @@
+{
+  "schema_version": "ergonektim.status-registry.v1",
+  "global_scalar_allowed": false,
+  "observers": {
+    "causal_link": {
+      "statuses": {
+        "instrument_indeterminate": {
+          "severity": "indeterminate",
+          "signal": "gray",
+          "icon": "help-circle"
+        },
+        "joint": {
+          "severity": "attention",
+          "signal": "amber",
+          "icon": "alert-triangle"
+        },
+        "no_new_deterioration": {
+          "severity": "favorable",
+          "signal": "green",
+          "icon": "check-circle"
+        },
+        "phi_internal": {
+          "severity": "attention",
+          "signal": "amber",
+          "icon": "alert-triangle"
+        },
+        "psi_environmental": {
+          "severity": "attention",
+          "signal": "amber",
+          "icon": "alert-triangle"
+        }
+      }
+    },
+    "condition_report": {
+      "statuses": {
+        "boundary_indeterminate": {
+          "severity": "indeterminate",
+          "signal": "gray",
+          "icon": "help-circle"
+        },
+        "instrument_indeterminate": {
+          "severity": "indeterminate",
+          "signal": "gray",
+          "icon": "help-circle"
+        },
+        "neutral_restitution": {
+          "severity": "informational",
+          "signal": "blue",
+          "icon": "info-circle"
+        },
+        "non_restitutive": {
+          "severity": "attention",
+          "signal": "amber",
+          "icon": "alert-triangle"
+        },
+        "regenerative": {
+          "severity": "favorable",
+          "signal": "green",
+          "icon": "check-circle"
+        }
+      }
+    },
+    "estimation_fidelity": {
+      "statuses": {
+        "critical_self_image": {
+          "severity": "attention",
+          "signal": "amber",
+          "icon": "alert-triangle"
+        },
+        "epistemically_saturated": {
+          "severity": "critical",
+          "signal": "red",
+          "icon": "alert-octagon"
+        },
+        "faithful_self_image": {
+          "severity": "favorable",
+          "signal": "green",
+          "icon": "check-circle"
+        },
+        "instrument_indeterminate": {
+          "severity": "indeterminate",
+          "signal": "gray",
+          "icon": "help-circle"
+        }
+      }
+    },
+    "performance_status": {
+      "statuses": {
+        "balanced": {
+          "severity": "informational",
+          "signal": "blue",
+          "icon": "info-circle"
+        },
+        "insolvent": {
+          "severity": "attention",
+          "signal": "amber",
+          "icon": "alert-triangle"
+        },
+        "instrument_indeterminate": {
+          "severity": "indeterminate",
+          "signal": "gray",
+          "icon": "help-circle"
+        },
+        "overoptimization_guard_triggered": {
+          "severity": "critical",
+          "signal": "red",
+          "icon": "alert-octagon"
+        },
+        "solvent": {
+          "severity": "favorable",
+          "signal": "green",
+          "icon": "check-circle"
+        }
+      }
+    },
+    "stability_status": {
+      "statuses": {
+        "collapsing": {
+          "severity": "critical",
+          "signal": "red",
+          "icon": "alert-octagon"
+        },
+        "instrument_indeterminate": {
+          "severity": "indeterminate",
+          "signal": "gray",
+          "icon": "help-circle"
+        },
+        "latent_collapse": {
+          "severity": "attention",
+          "signal": "amber",
+          "icon": "alert-triangle"
+        },
+        "viable": {
+          "severity": "favorable",
+          "signal": "green",
+          "icon": "check-circle"
+        }
+      }
+    },
+    "telemetric_status": {
+      "statuses": {
+        "instrument_indeterminate": {
+          "severity": "indeterminate",
+          "signal": "gray",
+          "icon": "help-circle"
+        },
+        "observability_clear": {
+          "severity": "favorable",
+          "signal": "green",
+          "icon": "check-circle"
+        },
+        "partially_observable_fail_closed": {
+          "severity": "attention",
+          "signal": "amber",
+          "icon": "alert-triangle"
+        }
+      }
+    }
+  }
+}

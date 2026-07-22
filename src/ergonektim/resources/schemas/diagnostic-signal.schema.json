@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gacj0901/Ergonektim/schemas/diagnostic-signal.v1.json",
+  "title": "ERGONEKTIM bilingual diagnostic signal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "observer",
+    "code",
+    "severity",
+    "signal",
+    "icon",
+    "eligible",
+    "timestamp_utc",
+    "evidence",
+    "presentations"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "ergonektim.diagnostic-signal.v1"
+    },
+    "observer": {
+      "enum": [
+        "telemetric_status",
+        "stability_status",
+        "performance_status",
+        "condition_report",
+        "causal_link",
+        "estimation_fidelity"
+      ]
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "severity": {
+      "enum": [
+        "favorable",
+        "informational",
+        "attention",
+        "critical",
+        "indeterminate"
+      ]
+    },
+    "signal": {
+      "enum": ["green", "blue", "amber", "red", "gray"]
+    },
+    "icon": {
+      "enum": [
+        "check-circle",
+        "info-circle",
+        "alert-triangle",
+        "alert-octagon",
+        "help-circle"
+      ]
+    },
+    "eligible": {
+      "type": "boolean"
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "evidence": {
+      "type": "object"
+    },
+    "presentations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "es"],
+      "properties": {
+        "en": { "$ref": "#/$defs/presentation" },
+        "es": { "$ref": "#/$defs/presentation" }
+      }
+    }
+  },
+  "$defs": {
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observer_name",
+        "label",
+        "explanation",
+        "review_action",
+        "claim_boundary"
+      ],
+      "properties": {
+        "observer_name": { "type": "string", "minLength": 1 },
+        "label": { "type": "string", "minLength": 1 },
+        "explanation": { "type": "string", "minLength": 1 },
+        "review_action": { "type": "string", "minLength": 1 },
+        "claim_boundary": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "eligible": { "const": false } } },
+      "then": {
+        "properties": {
+          "severity": { "const": "indeterminate" },
+          "signal": { "const": "gray" },
+          "icon": { "const": "help-circle" }
+        }
+      },
+      "else": {
+        "properties": {
+          "severity": {
+            "enum": ["favorable", "informational", "attention", "critical"]
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "severity": { "const": "favorable" } } },
+      "then": {
+        "properties": {
+          "signal": { "const": "green" },
+          "icon": { "const": "check-circle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "severity": { "const": "informational" } } },
+      "then": {
+        "properties": {
+          "signal": { "const": "blue" },
+          "icon": { "const": "info-circle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "severity": { "const": "attention" } } },
+      "then": {
+        "properties": {
+          "signal": { "const": "amber" },
+          "icon": { "const": "alert-triangle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "severity": { "const": "critical" } } },
+      "then": {
+        "properties": {
+          "signal": { "const": "red" },
+          "icon": { "const": "alert-octagon" }
+        }
+      }
+    }
+  ]
+}
