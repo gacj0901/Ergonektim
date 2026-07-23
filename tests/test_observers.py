@@ -42,7 +42,11 @@ class ObserverSemanticTests(unittest.TestCase):
             source_owner="contract_test_owner",
             register_role="internal_mismatch_phi",
             construction_id="contract_test_phi_v1",
-            a0_to_e1_e5_validated=True,
+            normalization_id="unit_interval_v1",
+            construction_spec_sha256="a" * 64,
+            input_roles=("internal_register_state",),
+            prefix_causality_certified=True,
+            operational_conformance_certificate_sha256="b" * 64,
             experimental_only=False,
         )
         result = causal_link_status(

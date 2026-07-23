@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/gacj0901/Ergonektim/schemas/input-bundle-manifest.v1.1.json",
+  "$id": "https://github.com/gacj0901/Ergonektim/schemas/input-bundle-manifest.v1.2.json",
   "title": "ERGONEKTIM universal input-bundle manifest",
   "type": "object",
   "additionalProperties": false,
@@ -17,7 +17,7 @@
     "kernel_config"
   ],
   "properties": {
-    "schema_version": { "const": "ergonektim.input-bundle.v1.1" },
+    "schema_version": { "const": "ergonektim.input-bundle.v1.2" },
     "assessment_id": {
       "type": "string",
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
@@ -38,7 +38,9 @@
         "effective_flow",
         "planned",
         "q",
-        "phi_register"
+        "phi_register",
+        "phi_valid",
+        "phi_issued_at"
       ],
       "properties": {
         "omega": { "$ref": "#/$defs/columnName" },
@@ -48,7 +50,9 @@
         "effective_flow": { "$ref": "#/$defs/columnName" },
         "planned": { "$ref": "#/$defs/columnName" },
         "q": { "$ref": "#/$defs/columnName" },
-        "phi_register": { "$ref": "#/$defs/columnName" }
+        "phi_register": { "$ref": "#/$defs/columnName" },
+        "phi_valid": { "$ref": "#/$defs/columnName" },
+        "phi_issued_at": { "$ref": "#/$defs/columnName" }
       }
     },
     "telemetry": {
@@ -220,11 +224,20 @@
         "source_owner",
         "register_role",
         "construction_id",
+        "normalization_id",
+        "construction_spec_sha256",
+        "input_roles",
+        "orientation",
+        "value_min",
+        "value_max",
         "available_by_t",
         "source_validity_gated",
         "independent_of_external_displacement",
+        "independent_of_kernel",
         "outcome_inputs_used",
-        "a0_to_e1_e5_validated",
+        "prefix_causality_certified",
+        "operational_conformance_certificate_sha256",
+        "representation_theorem_claimed",
         "experimental_only"
       ],
       "properties": {
@@ -232,20 +245,66 @@
         "source_owner": { "type": "string", "minLength": 1 },
         "register_role": { "type": "string", "minLength": 1 },
         "construction_id": { "type": "string", "minLength": 1 },
+        "normalization_id": { "type": "string", "minLength": 1 },
+        "construction_spec_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "input_roles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "orientation": { "const": "higher_is_more_coherent" },
+        "value_min": { "type": "number" },
+        "value_max": { "type": "number" },
         "available_by_t": { "const": true },
         "source_validity_gated": { "const": true },
         "independent_of_external_displacement": { "const": true },
+        "independent_of_kernel": { "const": true },
         "outcome_inputs_used": { "const": false },
-        "a0_to_e1_e5_validated": { "type": "boolean" },
+        "prefix_causality_certified": { "type": "boolean" },
+        "operational_conformance_certificate_sha256": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          ]
+        },
+        "representation_theorem_claimed": { "type": "boolean" },
         "experimental_only": { "type": "boolean" }
       },
       "allOf": [
         {
           "if": {
-            "properties": { "a0_to_e1_e5_validated": { "const": true } }
+            "required": ["operational_conformance_certificate_sha256"],
+            "properties": {
+              "operational_conformance_certificate_sha256": {
+                "type": "string"
+              }
+            }
           },
-          "then": { "properties": { "experimental_only": { "const": false } } },
+          "then": {
+            "properties": {
+              "prefix_causality_certified": { "const": true },
+              "experimental_only": { "const": false }
+            }
+          },
           "else": { "properties": { "experimental_only": { "const": true } } }
+        },
+        {
+          "if": {
+            "properties": {
+              "representation_theorem_claimed": { "const": true }
+            }
+          },
+          "then": {
+            "properties": {
+              "operational_conformance_certificate_sha256": {
+                "type": "string"
+              }
+            }
+          }
         }
       ]
     },
@@ -257,8 +316,11 @@
         "source_owner",
         "channel_role",
         "normalization_id",
+        "construction_spec_sha256",
         "units",
         "coupled_operational_parameter",
+        "source_roles_also_used",
+        "dual_use_declared",
         "representation_target",
         "available_by_t",
         "generated_independently_from_prama",
@@ -269,13 +331,38 @@
         "source_owner": { "type": "string", "minLength": 1 },
         "channel_role": { "type": "string", "minLength": 1 },
         "normalization_id": { "type": "string", "minLength": 1 },
+        "construction_spec_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
         "units": { "type": "string", "minLength": 1 },
         "coupled_operational_parameter": { "type": "string", "minLength": 1 },
+        "source_roles_also_used": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "dual_use_declared": { "type": "boolean" },
         "representation_target": { "const": "structural_excess_xi_minus_theta" },
         "available_by_t": { "const": true },
         "generated_independently_from_prama": { "const": true },
         "prama_variables_used": { "type": "array", "maxItems": 0 }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "source_roles_also_used": { "minItems": 1 }
+            }
+          },
+          "then": {
+            "properties": { "dual_use_declared": { "const": true } }
+          },
+          "else": {
+            "properties": { "dual_use_declared": { "const": false } }
+          }
+        }
+      ]
     },
     "kernelConfig": {
       "type": "object",

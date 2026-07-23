@@ -10,7 +10,7 @@ paquete/
 └── timeseries.csv
 ```
 
-El manifiesto usa el esquema `ergonektim.input-bundle.v1.1`. Su JSON Schema se empaqueta en `resources/schemas/input-bundle-manifest.schema.json`; el cargador ejecutable conserva la autoridad y aplica comprobaciones causales y entre campos adicionales.
+El manifiesto usa el esquema `ergonektim.input-bundle.v1.2`. Su JSON Schema se empaqueta en `resources/schemas/input-bundle-manifest.schema.json`; el cargador ejecutable conserva la autoridad y aplica comprobaciones causales y entre campos adicionales.
 
 ## Contrato por roles
 
@@ -27,12 +27,22 @@ Los nombres de columna son locales. El manifiesto los vincula con estos roles ob
 | `planned` | Marcador booleano de mantenimiento o intervención planificada. |
 | `q` | Drenaje telemétrico normalizado del intervalo causal de observabilidad. |
 | `phi_register` | Registro interno de desajuste ofrecido a Causal Link; la columna por sí sola nunca autoriza atribución. |
+| `phi_valid` | Gate de validez de fuente del registro interno. |
+| `phi_issued_at` | Tiempo de emisión por fila; un valor emitido después de la fila evaluada queda en cuarentena. |
 
 La sección de telemetría declara una o más columnas de validez de fuente y el contrato completo del intervalo. La telemetría ausente o inválida jamás se imputa como observable.
 
 ## Registro causal interno \(\Phi\)
 
-`causal_register.contract` declara fuente, propietario, rol, construcción, disponibilidad causal, gate de validez, independencia de outcomes e independencia respecto de \(w\). Causal Link solo emite cuando `a0_to_e1_e5_validated` es verdadero y `experimental_only` es falso. En caso contrario, el observador permanece `instrument_indeterminate`; un componente experimental puede estudiarse fuera del observador operacional sin promoverlo a atribución.
+`causal_register.contract` declara fuente, propietario, rol, orientación,
+normalización, cotas, linaje cerrado de entradas, hash de la especificación de
+construcción, disponibilidad causal, gate de validez e independencia respecto
+de outcomes, \(w\) y variables PRAMA. El antiguo conmutador libre
+`a0_to_e1_e5_validated` ya no existe. Causal Link solo emite cuando existen un
+certificado hasheado de conformidad operacional de nivel 1 y un certificado de
+causalidad por prefijo, el registro no es experimental y pasan las comprobaciones
+por fila. La afirmación del teorema de representación se registra por separado
+y el software no la sintetiza.
 
 ## Desplazamiento externo \(w\)
 
@@ -52,7 +62,7 @@ Las normalizaciones admitidas son relativa firmada, absoluta relativa a la refer
 
 ## Representación externa del operador \(R(t)\)
 
-La representación del operador apunta a `structural_excess_xi_minus_theta`. Debe identificar propietario externo, acople operacional, normalización, unidades, validez y tiempo de emisión. Debe generarse independientemente de PRAMA y declarar una lista `prama_variables_used` vacía.
+La representación del operador apunta a `structural_excess_xi_minus_theta`. Debe identificar propietario externo, acople operacional, normalización, especificación de construcción ligada por hash, unidades, validez y tiempo de emisión. Debe generarse independientemente de PRAMA y declarar una lista `prama_variables_used` vacía. Si su fuente se reutiliza en otro rol declarado, `source_roles_also_used` y `dual_use_declared` deben revelar exactamente ese uso dual.
 
 Causal Link no requiere etiquetas de evaluación una vez que \(\Phi\) es conforme. Las etiquetas independientes pueden utilizarse en un estudio de validación separado, pero no pueden autorizar atribución operacional.
 
@@ -79,12 +89,18 @@ Valide el paquete y la vinculación certificada sin ejecutar la evaluación:
 ergonektim verify --bundle PAQUETE_ENTRADA --recertification RECERTIFICACION.json --language es
 ```
 
-Ejecute una vez los seis observadores y escriba un artefacto bilingüe:
+Ejecute una vez los seis observadores y escriba un artefacto determinista:
 
 ```console
 ergonektim assess --bundle PAQUETE_ENTRADA --recertification RECERTIFICACION.json --output evaluacion.json --language es
 ```
 
-Use `--language en` para mensajes terminales en inglés. El artefacto siempre embebe ambos idiomas y el conmutador no puede alterar los bytes científicos. Una salida existente nunca se reemplaza sin `--overwrite` explícito y no puede escribirse dentro del paquete inmutable.
+Verifique un artefacto recibido mediante réplica exacta de custodia:
+
+```console
+ergonektim verify-artifact --artifact evaluacion.json --bundle PAQUETE_ENTRADA --recertification RECERTIFICACION.json --expected-sha256 SHA256 --language es
+```
+
+Use `--language en` para mensajes terminales en inglés. La selección de idioma no puede alterar los bytes científicos. Una salida existente nunca se reemplaza sin `--overwrite` explícito y no puede escribirse dentro del paquete inmutable.
 
 El código de salida `0` significa terminación. El código `2` indica detención contractual fail-closed.

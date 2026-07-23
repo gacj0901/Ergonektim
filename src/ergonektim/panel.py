@@ -15,6 +15,7 @@ from .contracts import (
     CausalRegisterContract,
     ExternalDisplacement,
     OperatorRepresentation,
+    validate_causal_register,
 )
 from .kernel_binding import verify_prama_binding
 from .observers import (
@@ -24,6 +25,7 @@ from .observers import (
     performance_status,
     stability_status,
 )
+from .reachability import audit_lambda_reachability
 from .signals import build_diagnostic_signal
 from .telemetry import TelemetricContract, audit_telemetry_frame
 
@@ -47,6 +49,8 @@ class AssessmentInputs:
     telemetry_valid_columns: tuple[str, ...]
     displacement: ExternalDisplacement
     phi_register: np.ndarray
+    phi_valid: np.ndarray
+    phi_issued_at: pd.DatetimeIndex
     causal_register_contract: CausalRegisterContract
     external_cause_labels: np.ndarray | None
     external_cause_labels_independent: bool | None
@@ -85,14 +89,17 @@ def _validated_inputs(inputs: AssessmentInputs) -> dict[str, np.ndarray]:
         ),
         "planned": _vector("planned", inputs.planned, n, np.bool_),
         "phi_register": _vector("phi_register", inputs.phi_register, n, np.float64),
+        "phi_valid": _vector("phi_valid", inputs.phi_valid, n, np.bool_),
     }
     if inputs.external_cause_labels is not None:
         arrays["external_cause_labels"] = _vector(
             "external_cause_labels", inputs.external_cause_labels, n, object
         )
-    for name in ("omega", "expected", "u_lambda", "effective_flow", "phi_register"):
+    for name in ("omega", "expected", "u_lambda", "effective_flow"):
         if not np.isfinite(arrays[name]).all():
             raise AssessmentContractError(f"{name} must be finite")
+    if len(pd.DatetimeIndex(inputs.phi_issued_at)) != n:
+        raise AssessmentContractError("phi_issued_at must align")
     if inputs.displacement.values.shape[0] != n:
         raise AssessmentContractError("external displacement must align")
     if inputs.operator_representation.values.shape != (n,):
@@ -169,6 +176,13 @@ def evaluate_assessment(
     if not telemetric_index.equals(index):
         raise AssessmentContractError("telemetric grid differs from assessment index")
     clear = telemetric.timeline["observability_clear"].to_numpy(dtype=np.bool_)
+    phi = validate_causal_register(
+        index,
+        arrays["phi_register"],
+        arrays["phi_valid"],
+        inputs.phi_issued_at,
+        inputs.causal_register_contract,
+    )
 
     stability = stability_status(gamma.sigma_op, gamma.M, gamma.G, clear)
     performance = performance_status(
@@ -182,11 +196,13 @@ def evaluate_assessment(
     )
     condition = condition_report(index, arrays["planned"], gamma.M, clear)
     causal = causal_link_status(
-        arrays["phi_register"],
+        phi.values,
         inputs.displacement,
         clear,
         arrays.get("external_cause_labels"),
         causal_register_contract=inputs.causal_register_contract,
+        causal_register_valid=phi.valid,
+        causal_register_record=phi.contract,
         external_cause_labels_independent=inputs.external_cause_labels_independent,
     )
     fidelity = estimation_fidelity_status(
@@ -197,6 +213,14 @@ def evaluate_assessment(
     regulatory_drain_active = cfg.kappa_v3 * cfg.h * gamma.A > 0.0
     lambda_changed = gamma.lambda_ != cfg.lambda_0
     regulatory_branch_exercised = bool(accumulated_debt_active.any())
+    reachability = audit_lambda_reachability(
+        gamma.delta_tilde,
+        gamma.xi,
+        gamma.theta,
+        h=cfg.h,
+        tau=cfg.tau,
+        xi_initial=0.0,
+    )
     kernel_branch_coverage = {
         "regulatory_A_lambda": {
             "xi_maximum": float(np.max(gamma.xi)),
@@ -216,6 +240,7 @@ def evaluate_assessment(
                 if regulatory_branch_exercised
                 else "regulatory_branch_not_exercised"
             ),
+            "analytic_reachability": reachability,
         }
     }
 
@@ -344,7 +369,7 @@ def evaluate_assessment(
         )
 
     return {
-        "schema_version": "ergonektim.assessment.v1.1",
+        "schema_version": "ergonektim.assessment.v1.2",
         "access": {
             "outcomes_accessed": False,
             "future_values_accessed": False,
@@ -354,7 +379,7 @@ def evaluate_assessment(
         "input_binding": binding_record,
         "kernel_config": asdict(cfg),
         "source_contracts": {
-            "causal_register_phi": inputs.causal_register_contract.record(),
+            "causal_register_phi": phi.contract,
             "external_displacement": inputs.displacement.contract,
             "operator_representation": inputs.operator_representation.contract,
             "telemetric": telemetric.report["contract"],
@@ -372,9 +397,8 @@ def evaluate_assessment(
             },
             "causal_register_phi": {
                 "observed": True,
-                "contract_complete": bool(
-                    inputs.causal_register_contract.conformant
-                ),
+                "instrument_complete": bool(phi.contract["instrument_complete"]),
+                "contract_complete": bool(phi.contract["complete"]),
                 "coupled_to_kernel_dynamics": False,
                 "observer_consumers": ["causal_link"],
                 "claim_boundary": (
@@ -410,7 +434,6 @@ def evaluate_assessment(
             "rows": len(timeline),
             "observer_count": 6,
             "single_process_run": True,
-            "bilingual_presentations_embedded": True,
             "global_scalar_emitted": False,
             "regulatory_branch_exercised": regulatory_branch_exercised,
         },
@@ -422,8 +445,13 @@ def write_assessment(path: str | Path, payload: dict[str, Any]) -> Path:
 
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    encoded = json.dumps(
+    target.write_bytes(canonical_assessment_bytes(payload))
+    return target
+
+
+def canonical_assessment_bytes(payload: Mapping[str, Any]) -> bytes:
+    """Encode an assessment in the only accepted artifact representation."""
+
+    return json.dumps(
         payload, sort_keys=True, separators=(",", ":"), allow_nan=False
     ).encode("utf-8") + b"\n"
-    target.write_bytes(encoded)
-    return target

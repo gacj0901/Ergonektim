@@ -27,7 +27,7 @@ class InputBundleTests(unittest.TestCase):
             binding = loaded.input_binding
             self.assertTrue(binding["verified"])
             self.assertEqual(
-                binding["schema_version"], "ergonektim.input-bundle.v1.1"
+                binding["schema_version"], "ergonektim.input-bundle.v1.2"
             )
             self.assertEqual(binding["rows"], 240)
             self.assertEqual(len(binding["manifest_sha256"]), 64)
@@ -86,13 +86,13 @@ class InputBundleTests(unittest.TestCase):
         self.assertFalse(schema["additionalProperties"])
         self.assertEqual(
             schema["properties"]["schema_version"]["const"],
-            "ergonektim.input-bundle.v1.1",
+            "ergonektim.input-bundle.v1.2",
         )
 
 
 @unittest.skipUnless(RECERTIFICATION, "canonical PRAMA recertification not supplied")
 class CliTests(unittest.TestCase):
-    def test_verify_and_assess_are_bilingual_and_deterministic(self) -> None:
+    def test_verify_and_assess_are_localized_and_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             bundle = write_synthetic_bundle(root / "bundle")
@@ -157,6 +157,63 @@ class CliTests(unittest.TestCase):
                 hashlib.sha256((root / "assessment-es.json").read_bytes()).hexdigest(),
                 expected_digest,
             )
+
+            replay_stdout = io.StringIO()
+            with redirect_stdout(replay_stdout):
+                code = main(
+                    [
+                        "verify-artifact",
+                        "--artifact",
+                        str(root / "assessment-en.json"),
+                        "--bundle",
+                        str(bundle),
+                        "--recertification",
+                        str(RECERTIFICATION),
+                        "--expected-sha256",
+                        expected_digest,
+                        "--language",
+                        "es",
+                    ]
+                )
+            self.assertEqual(code, 0)
+            replay = json.loads(replay_stdout.getvalue())
+            self.assertEqual(
+                replay["verification_mode"],
+                "byte_exact_deterministic_replay",
+            )
+            self.assertTrue(replay["received_bytes_equal_replay_bytes"])
+
+            mutated = root / "assessment-mutated.json"
+            changed = json.loads((root / "assessment-en.json").read_text())
+            changed["summary"]["rows"] += 1
+            mutated.write_bytes(
+                (
+                    json.dumps(
+                        changed,
+                        sort_keys=True,
+                        separators=(",", ":"),
+                        allow_nan=False,
+                    )
+                    + "\n"
+                ).encode("utf-8")
+            )
+            stderr = io.StringIO()
+            with redirect_stderr(stderr):
+                code = main(
+                    [
+                        "verify-artifact",
+                        "--artifact",
+                        str(mutated),
+                        "--bundle",
+                        str(bundle),
+                        "--recertification",
+                        str(RECERTIFICATION),
+                        "--language",
+                        "en",
+                    ]
+                )
+            self.assertEqual(code, 2)
+            self.assertIn("differs", json.loads(stderr.getvalue())["error"])
 
     def _assert_assess_existing(self, bundle: Path, output: Path) -> None:
         stdout = io.StringIO()

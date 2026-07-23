@@ -97,7 +97,6 @@ type Assessment = {
   summary: {
     rows: number;
     observer_count: number;
-    bilingual_presentations_embedded: boolean;
     global_scalar_emitted: boolean;
   };
   condition_report: Diagnostic[];
@@ -162,10 +161,9 @@ const copy = {
     state: "Estado",
     copied: "Hash copiado",
     copyHash: "Copiar hash",
-    invalid: "El archivo no cumple el contrato mínimo de assessment.v1.1.",
+    invalid: "El archivo no cumple el contrato mínimo de assessment.v1.2.",
     access: "Acceso científico",
     outcomeFree: "Sin outcomes",
-    bilingual: "ES + EN embebidos",
     demoNotice:
       "Esta vista usa una fixture sintética. Abra un artefacto ERGONEKTIM para inspeccionar una corrida propia.",
   },
@@ -208,10 +206,9 @@ const copy = {
     state: "State",
     copied: "Hash copied",
     copyHash: "Copy hash",
-    invalid: "The file does not satisfy the minimum assessment.v1.1 contract.",
+    invalid: "The file does not satisfy the minimum assessment.v1.2 contract.",
     access: "Scientific access",
     outcomeFree: "Outcome-free",
-    bilingual: "ES + EN embedded",
     demoNotice:
       "This view uses a synthetic fixture. Open an ERGONEKTIM artifact to inspect your own run.",
   },
@@ -436,7 +433,7 @@ function createDemoAssessment(): Assessment {
     { pre_margin_median: 0.32, during_margin_minimum: 0.08, post_margin_median: 0.24, restoration_per_invested_drain: 0.67 },
   );
   return {
-    schema_version: "ergonektim.assessment.v1.1",
+    schema_version: "ergonektim.assessment.v1.2",
     access: { outcomes_accessed: false, global_scalar_emitted: false },
     input_binding: {
       verified: true,
@@ -458,7 +455,6 @@ function createDemoAssessment(): Assessment {
     summary: {
       rows: timeline.length,
       observer_count: 6,
-      bilingual_presentations_embedded: true,
       global_scalar_emitted: false,
     },
     condition_report: [firstEpisode, secondEpisode],
@@ -563,7 +559,7 @@ export default function Home() {
     try {
       const payload = JSON.parse(await file.text()) as Assessment;
       if (
-        payload.schema_version !== "ergonektim.assessment.v1.1" ||
+        payload.schema_version !== "ergonektim.assessment.v1.2" ||
         !Array.isArray(payload.timeline) ||
         !payload.input_binding ||
         !payload.kernel_binding ||
@@ -634,7 +630,6 @@ export default function Home() {
           <span>{t.independent}</span>
           <span>{t.noScalar}</span>
           <span>{t.outcomeFree}</span>
-          <span>{t.bilingual}</span>
         </div>
         <p className="privacy-note">{t.localOnly}</p>
       </section>

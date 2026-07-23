@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const origin = host ? `${protocol}://${host}` : "http://localhost:3000";
   const title = "ERGONEKTIM · Aptadynamic Viability Assessment";
   const description =
-    "Bilingual, auditable viability assessment for electric power systems.";
+    "Auditable viability assessment for electric power systems.";
   const image = `${origin}/og.png`;
   return {
     title,

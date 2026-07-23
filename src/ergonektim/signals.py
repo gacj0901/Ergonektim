@@ -1,4 +1,4 @@
-"""Canonical bilingual diagnostic-signal contract.
+"""Canonical localized diagnostic-signal contract.
 
 Scientific codes and evidence are locale invariant. Presentation strings are
 resolved for both supported locales when a signal is built, so exported
@@ -61,7 +61,7 @@ def _status_map(payload: Mapping[str, Any]) -> dict[tuple[str, str], Mapping[str
 
 
 def validate_resource_parity() -> bool:
-    """Fail if registry and bilingual catalogs do not cover identical states."""
+    """Fail if registry and locale catalogs do not cover identical states."""
 
     registry = _registry()
     registry_keys = set(_status_map(registry))
@@ -144,7 +144,7 @@ def build_diagnostic_signal(
     timestamp_utc: str,
     evidence: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Build one self-describing bilingual signal from frozen status metadata."""
+    """Build one self-describing localized signal from frozen status metadata."""
 
     validate_resource_parity()
     registry = _registry()["observers"]

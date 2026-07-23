@@ -27,7 +27,7 @@ from .panel import AssessmentInputs
 from .telemetry import TelemetricContract
 
 
-SCHEMA_VERSION = "ergonektim.input-bundle.v1.1"
+SCHEMA_VERSION = "ergonektim.input-bundle.v1.2"
 MANIFEST_FILE = "manifest.json"
 CORE_ROLES = {
     "omega",
@@ -38,6 +38,8 @@ CORE_ROLES = {
     "planned",
     "q",
     "phi_register",
+    "phi_valid",
+    "phi_issued_at",
 }
 KERNEL_FIELDS = {
     "h",
@@ -269,8 +271,10 @@ def _causal_register_contract(value: object) -> CausalRegisterContract:
         "available_by_t",
         "source_validity_gated",
         "independent_of_external_displacement",
+        "independent_of_kernel",
         "outcome_inputs_used",
-        "a0_to_e1_e5_validated",
+        "prefix_causality_certified",
+        "representation_theorem_claimed",
         "experimental_only",
     }
     if any(not isinstance(payload[name], bool) for name in boolean_fields):
@@ -280,9 +284,31 @@ def _causal_register_contract(value: object) -> CausalRegisterContract:
         "source_owner",
         "register_role",
         "construction_id",
+        "normalization_id",
+        "orientation",
+        "construction_spec_sha256",
     ):
         payload[name] = _nonempty_string(
             payload[name], f"causal_register.contract.{name}"
+        )
+    if not isinstance(payload["input_roles"], list) or any(
+        not isinstance(item, str) or not item.strip()
+        for item in payload["input_roles"]
+    ):
+        raise InputBundleError("causal register input_roles must be a string list")
+    payload["input_roles"] = tuple(payload["input_roles"])
+    for name in ("value_min", "value_max"):
+        payload[name] = _finite_number(
+            payload[name], f"causal_register.contract.{name}"
+        )
+    certificate = payload["operational_conformance_certificate_sha256"]
+    if certificate is not None:
+        payload["operational_conformance_certificate_sha256"] = _nonempty_string(
+            certificate,
+            (
+                "causal_register.contract."
+                "operational_conformance_certificate_sha256"
+            ),
         )
     try:
         contract = CausalRegisterContract(**payload)
@@ -299,15 +325,23 @@ def _operator_contract(value: object) -> OperatorRepresentationContract:
         not isinstance(item, str) for item in payload["prama_variables_used"]
     ):
         raise InputBundleError("operator prama_variables_used must be a string list")
+    if not isinstance(payload["source_roles_also_used"], list) or any(
+        not isinstance(item, str) or not item.strip()
+        for item in payload["source_roles_also_used"]
+    ):
+        raise InputBundleError(
+            "operator source_roles_also_used must be a string list"
+        )
     if not isinstance(payload["available_by_t"], bool) or not isinstance(
         payload["generated_independently_from_prama"], bool
-    ):
+    ) or not isinstance(payload["dual_use_declared"], bool):
         raise InputBundleError("operator causality guards must be boolean")
     for name in (
         "source_system",
         "source_owner",
         "channel_role",
         "normalization_id",
+        "construction_spec_sha256",
         "units",
         "coupled_operational_parameter",
         "representation_target",
@@ -316,6 +350,7 @@ def _operator_contract(value: object) -> OperatorRepresentationContract:
             payload[name], f"operator_representation.contract.{name}"
         )
     payload["prama_variables_used"] = tuple(payload["prama_variables_used"])
+    payload["source_roles_also_used"] = tuple(payload["source_roles_also_used"])
     try:
         contract = OperatorRepresentationContract(**payload)
         contract.validate()
@@ -505,14 +540,25 @@ def load_assessment_bundle(path: str | Path) -> LoadedAssessmentBundle:
     phi_register = _numeric_vector(
         frame[core_columns["phi_register"]],
         "phi_register",
-        require_finite=True,
+        require_finite=False,
+    )
+    phi_valid, invalid_phi_tokens = _boolean_vector(
+        frame[core_columns["phi_valid"]],
+        "phi_valid",
+        reject_unrecognized=False,
+    )
+    phi_issued_at = _datetime_vector(
+        frame[core_columns["phi_issued_at"]],
+        "phi_issued_at",
     )
 
     observations: dict[str, np.ndarray] = {}
     references: dict[str, np.ndarray] = {}
     source_valid: dict[str, np.ndarray] = {}
     issue_times: dict[str, pd.DatetimeIndex] = {}
-    quarantined_boolean_tokens: dict[str, int] = {}
+    quarantined_boolean_tokens: dict[str, int] = {
+        "causal_register_phi": invalid_phi_tokens
+    }
     for channel, columns in zip(channels, external_columns, strict=True):
         observations[channel.name] = _numeric_vector(
             frame[columns["observation"]],
@@ -608,6 +654,8 @@ def load_assessment_bundle(path: str | Path) -> LoadedAssessmentBundle:
             telemetry_valid_columns=tuple(source_columns),
             displacement=displacement,
             phi_register=phi_register,
+            phi_valid=phi_valid,
+            phi_issued_at=phi_issued_at,
             causal_register_contract=causal_register_contract,
             external_cause_labels=None,
             external_cause_labels_independent=None,

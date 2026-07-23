@@ -35,12 +35,11 @@ class IntegratedPanelTests(unittest.TestCase):
             recertification_path=Path(RECERTIFICATION),
         )
         self.assertEqual(
-            payload["schema_version"], "ergonektim.assessment.v1.1"
+            payload["schema_version"], "ergonektim.assessment.v1.2"
         )
         self.assertEqual(payload["summary"]["observer_count"], 6)
         self.assertEqual(payload["summary"]["rows"], 240)
         self.assertTrue(payload["summary"]["single_process_run"])
-        self.assertTrue(payload["summary"]["bilingual_presentations_embedded"])
         self.assertFalse(payload["summary"]["global_scalar_emitted"])
         self.assertIn("regulatory_branch_exercised", payload["summary"])
         regulatory = payload["kernel_branch_coverage"]["regulatory_A_lambda"]
@@ -49,6 +48,17 @@ class IntegratedPanelTests(unittest.TestCase):
             regulatory["exercised"],
             payload["summary"]["regulatory_branch_exercised"],
         )
+        reachability = regulatory["analytic_reachability"]
+        self.assertIn(
+            reachability["status"],
+            {
+                "observed_crossing",
+                "reachable_not_observed",
+                "unreachable_under_empirical_bound",
+            },
+        )
+        self.assertTrue(all(reachability["invariants"].values()))
+        self.assertFalse(reachability["threshold_recalibrated"])
         w_boundary = payload["dynamics_boundary"]["external_displacement_w"]
         self.assertTrue(w_boundary["observed"])
         self.assertFalse(w_boundary["coupled_to_kernel_dynamics"])
@@ -78,6 +88,11 @@ class IntegratedPanelTests(unittest.TestCase):
         self.assertFalse(
             payload["source_contracts"]["causal_register_phi"][
                 "observer_emission_authorized"
+            ]
+        )
+        self.assertTrue(
+            payload["source_contracts"]["causal_register_phi"][
+                "instrument_complete"
             ]
         )
         first = payload["timeline"][0]["signals"]

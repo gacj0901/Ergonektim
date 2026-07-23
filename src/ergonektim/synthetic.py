@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import hashlib
 from pathlib import Path
 from typing import Any
 
@@ -136,6 +137,9 @@ def synthetic_assessment_fixture() -> tuple[AssessmentInputs, TelemetricContract
             source_owner="synthetic_independent_control_room",
             channel_role="operator_estimated_structural_excess_alarm_index",
             normalization_id="kernel_excess_units_identity_v1",
+            construction_spec_sha256=hashlib.sha256(
+                b"synthetic_operator_representation_v1"
+            ).hexdigest(),
             units="kernel_structural_excess_units",
             coupled_operational_parameter="synthetic_alarm_escalation_tier",
         ),
@@ -155,12 +159,18 @@ def synthetic_assessment_fixture() -> tuple[AssessmentInputs, TelemetricContract
             telemetry_valid_columns=("demand_valid", "forecast_valid"),
             displacement=displacement,
             phi_register=phi,
+            phi_valid=np.ones(n, dtype=np.bool_),
+            phi_issued_at=index,
             causal_register_contract=CausalRegisterContract(
                 source_system="synthetic_internal_register",
                 source_owner="synthetic_fixture",
                 register_role="internal_mismatch_phi",
                 construction_id="synthetic_phi_experimental_v1",
-                a0_to_e1_e5_validated=False,
+                normalization_id="synthetic_unit_interval_v1",
+                construction_spec_sha256=hashlib.sha256(
+                    b"synthetic_phi_experimental_v1"
+                ).hexdigest(),
+                input_roles=("synthetic_internal_state",),
                 experimental_only=True,
             ),
             external_cause_labels=labels,
@@ -205,6 +215,8 @@ def write_synthetic_bundle(path: str | Path) -> Path:
             "planned": inputs.planned,
             "q": inputs.telemetry["q"].to_numpy(),
             "phi_register": inputs.phi_register,
+            "phi_valid": inputs.phi_valid,
+            "phi_issued_at": inputs.phi_issued_at,
             "telemetry_demand_valid": inputs.telemetry[
                 "demand_valid"
             ].to_numpy(),
@@ -274,6 +286,8 @@ def write_synthetic_bundle(path: str | Path) -> Path:
             "planned": "planned",
             "q": "q",
             "phi_register": "phi_register",
+            "phi_valid": "phi_valid",
+            "phi_issued_at": "phi_issued_at",
         },
         "telemetry": {
             "source_valid_columns": [

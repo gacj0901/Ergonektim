@@ -4,26 +4,30 @@
 
 **Español** | [English](README.md)
 
-ERGONEKTIM es un producto bilingüe y auditable que convierte observaciones eléctricas causales en diagnósticos de viabilidad explícitos, distributivos y científicamente trazables.
+ERGONEKTIM es un producto auditable que convierte observaciones eléctricas causales en diagnósticos de viabilidad explícitos, distributivos y científicamente trazables.
 
 ## Estatus actual
 
-`0.1.0.dev2` — construcción ejecutable del contrato de producto. No se formula ninguna afirmación predictiva ni de operación en tiempo real.
+`0.1.0.dev3` — construcción ejecutable del contrato de producto. No se formula ninguna afirmación predictiva ni de operación en tiempo real.
 
 El hito actual proporciona:
 
 - la [constitución identitaria](IDENTIDAD.md);
 - el [glosario diagnóstico](GLOSARIO.md);
-- un contrato canónico de señales diagnósticas bilingües;
+- un contrato canónico de señales diagnósticas;
 - un [contrato universal y cerrado de entrada](INPUT_BUNDLE.es.md);
-- catálogos de estados en inglés y español; y
 - una ruta causal y fail-closed para ejecutar conjuntamente los seis observadores;
-- un contrato explícito de custodia de `Phi` que mantiene Causal Link cerrado
-  hasta validar el puente declarado A0-a-E1–E5;
+- un contrato ejecutable de custodia de `Phi` con validez por fila, tiempo de
+  emisión, linaje cerrado, hash de construcción, certificación de causalidad
+  por prefijo y una afirmación separada y opcional del teorema de representación;
 - normalizaciones de desplazamiento externo firmada, absoluta relativa a la
   referencia y de escala fija, sin clipping ni agregación escalar;
-- una vinculación verificada por hash con PRAMA Protokol `0.3.0` y su artefacto de recertificación numérica; y
-- pruebas ejecutables de paridad, libro mayor, compuertas e invariantes de atribución.
+- una vinculación verificada por hash con PRAMA Protokol `0.3.0` y su artefacto de recertificación numérica;
+- pruebas ejecutables de paridad, libro mayor, compuertas e invariantes de atribución;
+- una auditoría analítica que distingue rama regulatoria observada, alcanzable
+  bajo una cota empírica declarada o inalcanzable bajo esa cota;
+- una referencia circular exhaustiva opcional para Condition Report; y
+- verificación adversarial byte a byte mediante réplica determinista de custodia.
 
 La máquina de estados universal procede de una versión certificada y declarada de PRAMA Protokol. ERGONEKTIM contiene la realización eléctrica y no mantiene una copia divergente del kernel.
 
@@ -56,11 +60,20 @@ Ejecute la evaluación completa:
 ergonektim assess --bundle PAQUETE_ENTRADA --recertification RECERTIFICACION.json --output evaluacion.json --language es
 ```
 
-El comando escribe un único artefacto JSON determinista que contiene la custodia de entrada, la trayectoria de estado, las salidas de los seis observadores, ambas presentaciones lingüísticas, los contratos de fuente, los invariantes y la vinculación completa con la certificación del kernel.
+El comando escribe un único artefacto JSON determinista que contiene la custodia de entrada, la trayectoria de estado, las salidas de los seis observadores, los contratos de fuente, los invariantes y la vinculación completa con la certificación del kernel.
 
-## Sala bilingüe de evaluación
+Verifique un artefacto recibido recomputando la evaluación completa:
 
-El directorio [`dashboard`](dashboard/) contiene la sala de evaluación orientada al producto. Consume íntegramente en el navegador un artefacto `ergonektim.assessment.v1.1` ya terminado y proporciona:
+```console
+ergonektim verify-artifact --artifact evaluacion.json --bundle PAQUETE_ENTRADA --recertification RECERTIFICACION.json --expected-sha256 SHA256 --language es
+```
+
+Esto rechaza JSON no canónico, hashes alterados, entradas distintas y cualquier
+diferencia byte a byte frente a la réplica determinista.
+
+## Sala de evaluación
+
+El directorio [`dashboard`](dashboard/) contiene la sala de evaluación orientada al producto. Consume íntegramente en el navegador un artefacto `ergonektim.assessment.v1.2` ya terminado y proporciona:
 
 - lecturas separadas de los seis observadores;
 - custodia de entrada, kernel y recertificación;

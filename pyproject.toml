@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ergonektim"
-version = "0.1.0.dev2"
-description = "Bilingual aptadynamic viability assessment for electric power systems"
+version = "0.1.0.dev3"
+description = "Aptadynamic viability assessment for electric power systems"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [

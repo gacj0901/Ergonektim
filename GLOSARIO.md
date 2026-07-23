@@ -104,7 +104,12 @@ Estos campos aparecen únicamente cuando una evaluación declara una fuente de g
 |---|---|---|
 | `w_j(t)` | Entrada | Componente de desplazamiento externo con observación, referencia causal, normalización firmada o absoluta declarada, validez y procedencia propias. Los componentes no se agrupan por defecto. |
 | `w_valid` | Evidencia | Máscara de elegibilidad de cada componente externo. Los valores inválidos quedan en cuarentena y no se imputan. |
-| `Phi`, `Φ` | Entrada | Registro interno u organizacional declarado y ofrecido a la comparación de atribución. Causal Link permanece fail-closed hasta validar contractualmente su fuente, construcción causal, gate de validez, independencia de outcomes y puente A0-a-E1–E5. |
+| `Phi`, `Φ` | Entrada | Registro interno u organizacional declarado y ofrecido a la comparación de atribución. Causal Link permanece fail-closed sin custodia ejecutable por fila y certificado hasheado de conformidad de nivel 1. |
+| `phi_valid` | Evidencia | Máscara de validez de fuente de `Φ`; Causal Link exige válidas las dos filas adyacentes. |
+| `phi_issued_at` | Evidencia | Tiempo de emisión por fila. Un valor emitido después del timestamp evaluado queda en cuarentena. |
+| `construction_spec_sha256` | Custodia | Hash que liga `Φ` o `R` con su especificación declarada de construcción. |
+| `operational_conformance_certificate_sha256` | Custodia | Hash del certificado externo de nivel 1 que autoriza una construcción particular de `Φ`. Es distinto de una afirmación de teorema de representación. |
+| `representation_theorem_claimed` | Límite de afirmación | Registra si se afirma por separado un teorema de representación; el software no lo infiere de comprobaciones numéricas. |
 | `Psi_j`, `Ψ_j` | Evidencia | Brazo de respuesta externa asociado al componente `j`. |
 | `mismatch` | Evidencia | Discrepancia local `abs(Φ-Ψ_j)`. |
 | `mismatch_change` | Evidencia | Cambio de la discrepancia respecto de la fila elegible anterior. Valores no positivos significan ausencia de deterioro nuevo bajo este contrato local. |
@@ -123,6 +128,8 @@ Las etiquetas de Causal Link identifican la contribución de señal dominante. N
 | `representation_error` | Evidencia | Diferencia absoluta `abs(R-(Ξ-Θ))`. |
 | `fidelity`, `F` | Evidencia | Fidelidad normalizada `1-representation_error/Θ`. Valores positivos indican error menor al umbral; cero es la frontera crítica; valores negativos indican error mayor al umbral. |
 | `R_valid` | Evidencia | Elegibilidad por fila de la representación externa del operador. |
+| `source_roles_also_used` | Custodia | Otros roles declarados que reutilizan la misma fuente del operador. |
+| `dual_use_declared` | Custodia | Debe ser verdadero exactamente cuando `source_roles_also_used` no está vacío. |
 
 La fidelidad mide concordancia con una representación externa declarada. No establece que alguna de las dos representaciones sea la verdad física completa.
 
@@ -151,6 +158,13 @@ La fidelidad mide concordancia con una representación externa declarada. No est
 | `restored_margin` | Evidencia | `post_margin_median-during_margin_minimum`. |
 | `net_margin_vs_pre` | Evidencia | `post_margin_median-pre_margin_median`; determina la clasificación regenerativa, neutra o no restitutiva. |
 | `restoration_per_invested_drain` | Evidencia | `restored_margin/invested_drain` cuando el drenaje invertido es positivo. |
+| `restricted_shift_tail_probability` | Validación | Probabilidad de cola superior bajo el conjunto admisible de desplazamientos circulares. No se presenta como p-valor exacto de permutación irrestricta. |
+| `null_effect` | Validación | Fracción regenerativa observada menos la mediana de la referencia circular. |
+
+La auditoría analítica regulatoria informa `observed_crossing`,
+`reachable_not_observed` o `unreachable_under_empirical_bound`. Una cota
+empírica pertenece a la ventana de datos declarada, no es un límite físico del
+sistema.
 
 ## 10. Diccionario de estados diagnósticos
 

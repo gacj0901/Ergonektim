@@ -76,20 +76,12 @@ Color MUST NOT be the only carrier of meaning. Every signal MUST remain understa
 | Critical | `critical` | Structurally compromised condition |
 | Indeterminate | `indeterminate` | Insufficient evidence; no state inference allowed |
 
-## 7. Bilingual publication
+## 7. Presentation invariance
 
-ERGONEKTIM is published in English and Spanish from its first release. The application MUST provide a persistent `EN | ES` language switch.
-
-Changing language MUST NOT recompute or alter an assessment. Canonical codes, mathematical symbols, units, UTC timestamps, numerical values, hashes, and scientific results remain invariant. Only presentation strings and locale formatting change.
-
-User-facing reports MUST be self-describing in both languages. Documentation is maintained in synchronized pairs:
-
-- `README.md` and `README.es.md`;
-- `IDENTITY.md` and `IDENTIDAD.md`;
-- `GLOSSARY.md` and `GLOSARIO.md`; and
-- `USER_GUIDE.md` and `GUIA_DE_USUARIO.md`.
-
-Automated checks MUST verify equal translation-key coverage across English and Spanish catalogs.
+Changing presentation settings MUST NOT recompute or alter an assessment.
+Canonical codes, mathematical symbols, units, UTC timestamps, numerical
+values, hashes, and scientific results remain invariant. Only presentation
+strings and locale formatting may change.
 
 ## 8. Constitutional principles
 
@@ -124,4 +116,4 @@ The experimental laboratory preserves exploratory history. ERGONEKTIM preserves 
 
 ## Canonical statement
 
-> **ERGONEKTIM is an auditable, bilingual aptadynamic assessment product for electric power systems. It turns causal observations into understandable, visually explicit, and scientifically traceable viability diagnostics while preserving uncertainty, provenance, and the limits of inference.**
+> **ERGONEKTIM is an auditable aptadynamic assessment product for electric power systems. It turns causal observations into understandable, visually explicit, and scientifically traceable viability diagnostics while preserving uncertainty, provenance, and the limits of inference.**

@@ -76,20 +76,12 @@ El color NO DEBE ser el único portador de significado. Toda señal DEBE entende
 | Crítico | `critical` | Condición estructural comprometida |
 | Indeterminado | `indeterminate` | Evidencia insuficiente; no se permite inferir estado |
 
-## 7. Publicación bilingüe
+## 7. Invariancia de presentación
 
-ERGONEKTIM se publica en inglés y español desde su primera versión. La aplicación DEBE proporcionar un conmutador persistente `EN | ES`.
-
-Cambiar el idioma NO DEBE recalcular ni alterar una evaluación. Los códigos canónicos, símbolos matemáticos, unidades, timestamps UTC, valores numéricos, hashes y resultados científicos permanecen invariantes. Solo cambian los textos de presentación y el formato regional.
-
-Los reportes dirigidos al usuario DEBEN ser autodescriptivos en ambos idiomas. La documentación se mantiene en pares sincronizados:
-
-- `README.md` y `README.es.md`;
-- `IDENTITY.md` e `IDENTIDAD.md`;
-- `GLOSSARY.md` y `GLOSARIO.md`; y
-- `USER_GUIDE.md` y `GUIA_DE_USUARIO.md`.
-
-Las verificaciones automatizadas DEBEN comprobar que los catálogos en inglés y español contienen exactamente las mismas claves de traducción.
+Cambiar la presentación NO DEBE recalcular ni alterar una evaluación. Los
+códigos canónicos, símbolos matemáticos, unidades, timestamps UTC, valores
+numéricos, hashes y resultados científicos permanecen invariantes. Solo pueden
+cambiar los textos de presentación y el formato regional.
 
 ## 8. Principios constitutivos
 
@@ -124,4 +116,4 @@ El laboratorio experimental conserva la historia exploratoria. ERGONEKTIM conser
 
 ## Declaración canónica
 
-> **ERGONEKTIM es un producto bilingüe y auditable de evaluación aptadinámica para sistemas eléctricos de potencia. Convierte observaciones causales en diagnósticos de viabilidad comprensibles, visualmente explícitos y científicamente trazables, preservando la incertidumbre, la procedencia y los límites de inferencia.**
+> **ERGONEKTIM es un producto auditable de evaluación aptadinámica para sistemas eléctricos de potencia. Convierte observaciones causales en diagnósticos de viabilidad comprensibles, visualmente explícitos y científicamente trazables, preservando la incertidumbre, la procedencia y los límites de inferencia.**

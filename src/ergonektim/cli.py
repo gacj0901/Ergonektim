@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 from typing import Any, Sequence
 
+from .artifact import ArtifactVerificationError, verify_assessment_artifact
 from .contracts import ExternalContractError
 from .input_bundle import InputBundleError, load_assessment_bundle
 from .kernel_binding import KernelBindingError, verify_prama_binding
@@ -19,15 +20,19 @@ from .telemetry import TelemetricStatusError
 
 MESSAGES = {
     "en": {
-        "assessed": "Assessment completed; one bilingual artifact was written.",
+        "assessed": "Assessment completed; one deterministic artifact was written.",
         "verified": "Input bundle and certified kernel binding are valid.",
+        "artifact_verified": "Assessment artifact matches an exact custody replay.",
         "error": "Assessment stopped fail-closed.",
         "exists": "Output already exists; use --overwrite to replace it.",
         "inside": "Output must be written outside the immutable input bundle.",
     },
     "es": {
-        "assessed": "Evaluación completada; se escribió un único artefacto bilingüe.",
+        "assessed": "Evaluación completada; se escribió un único artefacto determinista.",
         "verified": "El paquete de entrada y la vinculación certificada son válidos.",
+        "artifact_verified": (
+            "El artefacto de evaluación coincide con una réplica exacta de custodia."
+        ),
         "error": "La evaluación se detuvo en modo fail-closed.",
         "exists": "La salida ya existe; use --overwrite para sustituirla.",
         "inside": "La salida debe escribirse fuera del paquete de entrada inmutable.",
@@ -62,6 +67,12 @@ def _parser() -> argparse.ArgumentParser:
         if name == "assess":
             command.add_argument("--output", required=True, type=Path)
             command.add_argument("--overwrite", action="store_true")
+    artifact = subcommands.add_parser("verify-artifact")
+    artifact.add_argument("--artifact", required=True, type=Path)
+    artifact.add_argument("--bundle", required=True, type=Path)
+    artifact.add_argument("--recertification", required=True, type=Path)
+    artifact.add_argument("--expected-sha256")
+    artifact.add_argument("--language", choices=("en", "es"), default="en")
     return parser
 
 
@@ -81,6 +92,22 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     language = str(args.language)
     try:
+        if args.command == "verify-artifact":
+            result = verify_assessment_artifact(
+                args.artifact,
+                args.bundle,
+                args.recertification,
+                expected_sha256=args.expected_sha256,
+            )
+            _emit(
+                {
+                    **result,
+                    "message": MESSAGES[language]["artifact_verified"],
+                    "language": language,
+                }
+            )
+            return 0
+
         loaded = load_assessment_bundle(args.bundle)
         kernel_binding = verify_prama_binding(args.recertification)
         if args.command == "verify":
@@ -127,6 +154,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     except (
         AssessmentContractError,
+        ArtifactVerificationError,
         CliContractError,
         ExternalContractError,
         InputBundleError,

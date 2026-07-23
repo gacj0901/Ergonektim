@@ -104,7 +104,12 @@ These fields are present only when an assessment declares a physical graph sourc
 |---|---|---|
 | `w_j(t)` | Input | External displacement component with its own observation, causal reference, declared signed or absolute normalization, validity, and provenance. Components are not pooled by default. |
 | `w_valid` | Evidence | Eligibility mask for each external component. Invalid values remain quarantined and are not imputed. |
-| `Phi`, `Φ` | Input | Declared internal or organizational register offered to the attribution comparison. Causal Link remains fail-closed unless its source, causal construction, validity gate, outcome independence, and A0-to-E1–E5 bridge are contractually validated. |
+| `Phi`, `Φ` | Input | Declared internal or organizational register offered to the attribution comparison. Causal Link remains fail-closed without executable row custody and a hash-bound level-1 conformance certificate. |
+| `phi_valid` | Evidence | Source-validity mask for `Φ`; Causal Link requires both adjacent rows to be valid. |
+| `phi_issued_at` | Evidence | Row issue time. A value issued after its evaluation timestamp is quarantined. |
+| `construction_spec_sha256` | Custody | Hash binding `Φ` or `R` to its declared construction specification. |
+| `operational_conformance_certificate_sha256` | Custody | Hash of the external level-1 certificate authorizing a particular `Φ` construction. It is distinct from a representation-theorem claim. |
+| `representation_theorem_claimed` | Claim boundary | Records whether a separate representation theorem is claimed; software does not infer this from numerical checks. |
 | `Psi_j`, `Ψ_j` | Evidence | External-response arm associated with component `j`. |
 | `mismatch` | Evidence | Local discrepancy `abs(Φ-Ψ_j)`. |
 | `mismatch_change` | Evidence | Change in mismatch from the preceding eligible row. Nonpositive values mean no new deterioration under this local contract. |
@@ -123,6 +128,8 @@ The Causal Link labels identify the dominant signal contribution. They do not by
 | `representation_error` | Evidence | Absolute difference `abs(R-(Ξ-Θ))`. |
 | `fidelity`, `F` | Evidence | Normalized representation fidelity `1-representation_error/Θ`. Positive values indicate error smaller than the current threshold; zero is the critical boundary; negative values indicate error larger than the threshold. |
 | `R_valid` | Evidence | Row eligibility of the external operator representation. |
+| `source_roles_also_used` | Custody | Other declared roles that reuse the same operator source. |
+| `dual_use_declared` | Custody | Must be true exactly when `source_roles_also_used` is nonempty. |
 
 Fidelity measures agreement with a declared external representation. It does not establish that either representation is the complete physical truth.
 
@@ -151,6 +158,12 @@ Fidelity measures agreement with a declared external representation. It does not
 | `restored_margin` | Evidence | `post_margin_median-during_margin_minimum`. |
 | `net_margin_vs_pre` | Evidence | `post_margin_median-pre_margin_median`; it determines regenerative, neutral, or non-restitutive classification. |
 | `restoration_per_invested_drain` | Evidence | `restored_margin/invested_drain` when invested drain is positive. |
+| `restricted_shift_tail_probability` | Validation | Upper-tail probability under the admissible circular-shift reference set. It is not presented as an exact unrestricted permutation p-value. |
+| `null_effect` | Validation | Observed regenerative fraction minus the median circular-shift reference fraction. |
+
+The analytic regulatory audit reports `observed_crossing`,
+`reachable_not_observed`, or `unreachable_under_empirical_bound`. An empirical
+bound is a property of the declared data window, not a physical system limit.
 
 ## 10. Diagnostic status dictionary
 

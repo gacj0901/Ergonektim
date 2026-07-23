@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/gacj0901/Ergonektim/schemas/diagnostic-signal.v1.json",
-  "title": "ERGONEKTIM bilingual diagnostic signal",
+  "title": "ERGONEKTIM localized diagnostic signal",
   "type": "object",
   "additionalProperties": false,
   "required": [

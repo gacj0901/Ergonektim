@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 import math
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
@@ -274,6 +274,8 @@ def causal_link_status(
     external_cause_labels: object | None,
     *,
     causal_register_contract: CausalRegisterContract,
+    causal_register_valid: object | None = None,
+    causal_register_record: Mapping[str, Any] | None = None,
     external_cause_labels_independent: bool | None,
     tolerance: float = 1e-12,
 ) -> dict[str, Any]:
@@ -282,12 +284,22 @@ def causal_link_status(
     if not displacement.complete:
         raise ObserverContractError("Causal Link needs a complete displacement contract")
     try:
-        phi_contract = causal_register_contract.record()
+        phi_contract = (
+            causal_register_contract.record()
+            if causal_register_record is None
+            else dict(causal_register_record)
+        )
+        causal_register_contract.validate()
     except (TypeError, ValueError) as exc:
         raise ObserverContractError("Causal Link Phi contract is invalid") from exc
     if not math.isfinite(tolerance) or tolerance < 0.0:
         raise ObserverContractError("invalid Causal Link tolerance")
     phi = _vector("phi_register", phi_register, np.float64)
+    phi_valid = (
+        np.ones(phi.size, dtype=np.bool_)
+        if causal_register_valid is None
+        else _vector("causal_register_valid", causal_register_valid, np.bool_)
+    )
     clear = _vector("observability_clear", observability_clear, np.bool_)
     labels = None
     if external_cause_labels is not None:
@@ -298,9 +310,13 @@ def causal_link_status(
     valid = displacement.valid
     if psi.shape != valid.shape or psi.shape[0] != phi.size:
         raise ObserverContractError("Causal Link components must align")
-    if clear.shape != phi.shape or (labels is not None and labels.shape != phi.shape):
+    if (
+        clear.shape != phi.shape
+        or phi_valid.shape != phi.shape
+        or (labels is not None and labels.shape != phi.shape)
+    ):
         raise ObserverContractError("Causal Link row inputs must align")
-    if not np.isfinite(phi).all() or not np.isfinite(psi[valid]).all():
+    if not np.isfinite(phi[phi_valid]).all() or not np.isfinite(psi[valid]).all():
         raise ObserverContractError("Causal Link valid values must be finite")
     allowed = {"internal", "environmental", "joint", "none"}
     if labels is not None and any(str(label) not in allowed for label in labels):
@@ -345,6 +361,7 @@ def causal_link_status(
                     labels is None or external_cause_labels_independent is True
                 ),
                 "causal_register_contract_respected": True,
+                "causal_register_validity_gate_respected": True,
                 "observer_fail_closed_without_conformant_phi": True,
             },
         }
@@ -353,6 +370,8 @@ def causal_link_status(
             if not (
                 clear[row - 1]
                 and clear[row]
+                and phi_valid[row - 1]
+                and phi_valid[row]
                 and valid[row - 1, component]
                 and valid[row, component]
             ):
@@ -386,7 +405,16 @@ def causal_link_status(
         or np.max(np.abs(finite)) <= max(tolerance, 8.0 * np.finfo(float).eps)
     )
     gate = bool(np.all(status[~eligible] == INDETERMINATE))
-    if not exact or not gate:
+    phi_gate = bool(
+        np.all(
+            ~eligible
+            | (
+                phi_valid[:, np.newaxis]
+                & np.roll(phi_valid, 1)[:, np.newaxis]
+            )
+        )
+    )
+    if not exact or not gate or not phi_gate:
         raise RuntimeError("Causal Link invariant failure")
     expected = {
         "internal": "phi_internal",
@@ -444,6 +472,7 @@ def causal_link_status(
                 labels is None or external_cause_labels_independent is True
             ),
             "causal_register_contract_respected": True,
+            "causal_register_validity_gate_respected": phi_gate,
             "observer_fail_closed_without_conformant_phi": True,
         },
     }

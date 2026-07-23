@@ -11,9 +11,25 @@ import pandas as pd
 
 
 W_CONTRACT_ID = "ergonektim.external-displacement.w.v1.1"
-PHI_CONTRACT_ID = "ergonektim.causal-register.Phi.v1"
+PHI_CONTRACT_ID = "ergonektim.causal-register.Phi.v2"
 R_CONTRACT_ID = "ergonektim.operator-representation.R.v1"
 R_TARGET = "structural_excess_xi_minus_theta"
+PHI_ORIENTATION = "higher_is_more_coherent"
+PROHIBITED_PHI_INPUT_ROLES = {
+    "A",
+    "G",
+    "M",
+    "Theta",
+    "Xi",
+    "cause_label",
+    "delta",
+    "delta_tilde",
+    "evaluation_outcome",
+    "external_displacement_w",
+    "lambda",
+    "outcome",
+    "w",
+}
 NORMALIZATIONS = {
     "reference_relative",
     "absolute_reference_relative",
@@ -23,6 +39,14 @@ NORMALIZATIONS = {
 
 class ExternalContractError(ValueError):
     """Raised when an external input is acausal, circular, or incomplete."""
+
+
+def _is_sha256(value: object) -> bool:
+    return bool(
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789abcdef" for character in value)
+    )
 
 
 @dataclass(frozen=True)
@@ -100,17 +124,26 @@ class ExternalDisplacement:
 
 @dataclass(frozen=True)
 class CausalRegisterContract:
-    """Custody boundary for the internal causal register ``Phi``."""
+    """Hash-bound custody and level-1 conformance contract for ``Phi``."""
 
     source_system: str
     source_owner: str
     register_role: str
     construction_id: str
+    normalization_id: str
+    construction_spec_sha256: str
+    input_roles: tuple[str, ...]
+    orientation: str = PHI_ORIENTATION
+    value_min: float = 0.0
+    value_max: float = 1.0
     available_by_t: bool = True
     source_validity_gated: bool = True
     independent_of_external_displacement: bool = True
+    independent_of_kernel: bool = True
     outcome_inputs_used: bool = False
-    a0_to_e1_e5_validated: bool = False
+    prefix_causality_certified: bool = False
+    operational_conformance_certificate_sha256: str | None = None
+    representation_theorem_claimed: bool = False
     experimental_only: bool = True
 
     def validate(self) -> None:
@@ -119,33 +152,83 @@ class CausalRegisterContract:
             self.source_owner,
             self.register_role,
             self.construction_id,
+            self.normalization_id,
         )
         if any(not value.strip() for value in text_fields):
             raise ExternalContractError("causal register metadata must be nonempty")
+        if not _is_sha256(self.construction_spec_sha256):
+            raise ExternalContractError(
+                "causal register construction_spec_sha256 is invalid"
+            )
+        if (
+            not self.input_roles
+            or any(not isinstance(role, str) or not role.strip() for role in self.input_roles)
+            or len(set(self.input_roles)) != len(self.input_roles)
+        ):
+            raise ExternalContractError(
+                "causal register input_roles must be nonempty and unique"
+            )
+        forbidden = sorted(set(self.input_roles) & PROHIBITED_PHI_INPUT_ROLES)
+        if forbidden:
+            raise ExternalContractError(
+                f"causal register input_roles contain prohibited roles: {forbidden}"
+            )
+        if self.orientation != PHI_ORIENTATION:
+            raise ExternalContractError(
+                f"causal register orientation must be {PHI_ORIENTATION}"
+            )
+        if (
+            not math.isfinite(self.value_min)
+            or not math.isfinite(self.value_max)
+            or self.value_min >= self.value_max
+        ):
+            raise ExternalContractError("causal register value bounds are invalid")
         if not self.available_by_t:
             raise ExternalContractError("causal register must be available by t")
         if not self.source_validity_gated:
             raise ExternalContractError("causal register must inherit source validity")
-        if not self.independent_of_external_displacement:
+        if (
+            not self.independent_of_external_displacement
+            or not self.independent_of_kernel
+        ):
             raise ExternalContractError(
-                "causal register cannot be constructed from external displacement"
+                "causal register cannot be constructed from w or PRAMA variables"
             )
         if self.outcome_inputs_used:
             raise ExternalContractError(
                 "causal register construction cannot use evaluation outcomes"
             )
-        if self.a0_to_e1_e5_validated and self.experimental_only:
+        certificate_present = self.operational_conformance_certificate_sha256 is not None
+        if certificate_present and not _is_sha256(
+            self.operational_conformance_certificate_sha256
+        ):
             raise ExternalContractError(
-                "validated causal register cannot remain experimental_only"
+                "causal register conformance certificate hash is invalid"
             )
-        if not self.a0_to_e1_e5_validated and not self.experimental_only:
+        if certificate_present and not self.prefix_causality_certified:
             raise ExternalContractError(
-                "unvalidated causal register must remain experimental_only"
+                "operational conformance requires a prefix-causality certificate"
+            )
+        if certificate_present and self.experimental_only:
+            raise ExternalContractError(
+                "certified causal register cannot remain experimental_only"
+            )
+        if not certificate_present and not self.experimental_only:
+            raise ExternalContractError(
+                "uncertified causal register must remain experimental_only"
+            )
+        if self.representation_theorem_claimed and not certificate_present:
+            raise ExternalContractError(
+                "a representation-theorem claim requires operational conformance"
             )
 
     @property
     def conformant(self) -> bool:
-        return bool(self.a0_to_e1_e5_validated and not self.experimental_only)
+        return bool(
+            self.operational_conformance_certificate_sha256 is not None
+            and self.prefix_causality_certified
+            and not self.experimental_only
+        )
 
     def record(self) -> dict[str, Any]:
         self.validate()
@@ -160,11 +243,33 @@ class CausalRegisterContract:
                 "independent_of_external_displacement": (
                     self.independent_of_external_displacement
                 ),
+                "independent_of_kernel": self.independent_of_kernel,
                 "outcome_inputs_absent": not self.outcome_inputs_used,
-                "a0_to_e1_e5_validated": self.a0_to_e1_e5_validated,
+                "construction_spec_hash_bound": _is_sha256(
+                    self.construction_spec_sha256
+                ),
+                "input_lineage_closed": bool(self.input_roles),
+                "prohibited_input_roles_absent": not bool(
+                    set(self.input_roles) & PROHIBITED_PHI_INPUT_ROLES
+                ),
+                "orientation_declared": self.orientation == PHI_ORIENTATION,
+                "prefix_causality_certified": self.prefix_causality_certified,
+                "operational_conformance_certificate_present": (
+                    self.operational_conformance_certificate_sha256 is not None
+                ),
+                "representation_theorem_claimed": (
+                    self.representation_theorem_claimed
+                ),
                 "operational_not_experimental": not self.experimental_only,
             },
         }
+
+
+@dataclass(frozen=True)
+class CausalRegister:
+    values: np.ndarray
+    valid: np.ndarray
+    contract: dict[str, Any]
 
 
 @dataclass(frozen=True)
@@ -173,8 +278,11 @@ class OperatorRepresentationContract:
     source_owner: str
     channel_role: str
     normalization_id: str
+    construction_spec_sha256: str
     units: str
     coupled_operational_parameter: str
+    source_roles_also_used: tuple[str, ...] = ()
+    dual_use_declared: bool = False
     representation_target: str = R_TARGET
     available_by_t: bool = True
     generated_independently_from_prama: bool = True
@@ -191,6 +299,25 @@ class OperatorRepresentationContract:
         )
         if any(not value.strip() for value in text_fields):
             raise ExternalContractError("operator representation metadata must be nonempty")
+        if not _is_sha256(self.construction_spec_sha256):
+            raise ExternalContractError(
+                "operator representation construction_spec_sha256 is invalid"
+            )
+        if (
+            len(set(self.source_roles_also_used))
+            != len(self.source_roles_also_used)
+            or any(
+                not isinstance(role, str) or not role.strip()
+                for role in self.source_roles_also_used
+            )
+        ):
+            raise ExternalContractError(
+                "operator representation reused source roles are invalid"
+            )
+        if bool(self.source_roles_also_used) != self.dual_use_declared:
+            raise ExternalContractError(
+                "operator representation dual source use must be declared exactly"
+            )
         if self.representation_target != R_TARGET:
             raise ExternalContractError("operator representation must target Xi minus Theta")
         if not self.available_by_t:
@@ -238,6 +365,57 @@ def _issue_vector(name: str, values: object, length: int) -> pd.DatetimeIndex:
             f"{name} issue times must align and be timezone-aware"
         )
     return stamps
+
+
+def validate_causal_register(
+    index: object,
+    values: object,
+    source_valid: object,
+    issued_at: object,
+    contract: CausalRegisterContract,
+) -> CausalRegister:
+    """Validate row-level Phi custody without promoting a theorem claim."""
+
+    contract.validate()
+    stamps = _index(index, "causal register")
+    raw = _float_vector("causal register", values, len(stamps))
+    declared_valid = _bool_vector(
+        "causal register source validity", source_valid, len(stamps)
+    )
+    issue = _issue_vector("causal register", issued_at, len(stamps))
+    causal = issue <= stamps
+    finite = np.isfinite(raw)
+    in_range = finite & (raw >= contract.value_min) & (raw <= contract.value_max)
+    valid = declared_valid & causal & in_range
+    emitted = np.full(raw.size, np.nan, dtype=np.float64)
+    emitted[valid] = raw[valid]
+    runtime_checks = {
+        "at_least_one_valid_row": bool(valid.any()),
+        "all_emitted_rows_causal": bool(np.all(causal[valid])),
+        "all_emitted_rows_finite": bool(np.all(finite[valid])),
+        "all_emitted_rows_within_declared_bounds": bool(np.all(in_range[valid])),
+        "source_validity_gate_applied": bool(np.all(valid <= declared_valid)),
+        "invalid_rows_imputed_or_clipped": False,
+        "future_rows_rejected": int((declared_valid & ~causal).sum()),
+        "out_of_range_rows_rejected": int((declared_valid & causal & ~in_range).sum()),
+    }
+    instrument_complete = bool(
+        runtime_checks["at_least_one_valid_row"]
+        and runtime_checks["all_emitted_rows_causal"]
+        and runtime_checks["all_emitted_rows_finite"]
+        and runtime_checks["all_emitted_rows_within_declared_bounds"]
+        and runtime_checks["source_validity_gate_applied"]
+    )
+    record = contract.record()
+    record["instrument_complete"] = instrument_complete
+    record["runtime_checks"] = runtime_checks
+    record["valid_rows"] = int(valid.sum())
+    record["quarantined_rows"] = int((~valid).sum())
+    record["complete"] = bool(record["complete"] and instrument_complete)
+    record["observer_emission_authorized"] = bool(
+        record["observer_emission_authorized"] and instrument_complete
+    )
+    return CausalRegister(values=emitted, valid=valid, contract=record)
 
 
 def realize_external_displacement(
@@ -396,6 +574,12 @@ def validate_operator_representation(
         "at_least_one_valid_row": bool(valid.any()),
         "representation_target_exact": contract.representation_target == R_TARGET,
         "operational_coupling_declared": bool(contract.coupled_operational_parameter),
+        "construction_spec_hash_bound": _is_sha256(
+            contract.construction_spec_sha256
+        ),
+        "dual_source_use_declared_exactly": bool(
+            bool(contract.source_roles_also_used) == contract.dual_use_declared
+        ),
         "prama_variables_used": False,
         "future_values_used": False,
         "all_emitted_rows_causal": bool(np.all(causal[valid])),
@@ -405,6 +589,8 @@ def validate_operator_representation(
         checks["at_least_one_valid_row"]
         and checks["representation_target_exact"]
         and checks["operational_coupling_declared"]
+        and checks["construction_spec_hash_bound"]
+        and checks["dual_source_use_declared_exactly"]
         and checks["all_emitted_rows_causal"]
     )
     return OperatorRepresentation(
