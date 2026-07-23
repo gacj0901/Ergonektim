@@ -15,6 +15,7 @@ El hito actual proporciona:
 - la [constitución identitaria](IDENTIDAD.md);
 - el [glosario diagnóstico](GLOSARIO.md);
 - un contrato canónico de señales diagnósticas bilingües;
+- un [contrato universal y cerrado de entrada](INPUT_BUNDLE.es.md);
 - catálogos de estados en inglés y español; y
 - una ruta causal y fail-closed para ejecutar conjuntamente los seis observadores;
 - una vinculación verificada por hash con PRAMA Protokol `0.3.0` y su artefacto de recertificación numérica; y
@@ -39,13 +40,19 @@ No se emite un escalar global ni un semáforo general.
 
 ## Verificación en una corrida
 
-Con el paquete certificado PRAMA Protokol `0.3.0` instalado, la fixture sintética completa se evalúa mediante:
+Valide un paquete canónico y su vinculación certificada sin ejecutar la evaluación:
 
 ```console
-python examples/run_synthetic_assessment.py --recertification RUTA/A/v0_3_0_numeric_recertification.json --output assessment.json
+ergonektim verify --bundle PAQUETE_ENTRADA --recertification RECERTIFICACION.json --language es
 ```
 
-El comando escribe un único artefacto JSON determinista que contiene la trayectoria de estado, las salidas de los seis observadores, ambas presentaciones lingüísticas, los contratos de fuente, los invariantes y la vinculación completa con la certificación del kernel. La fixture no contiene datos reales y sirve únicamente para verificación.
+Ejecute la evaluación completa:
+
+```console
+ergonektim assess --bundle PAQUETE_ENTRADA --recertification RECERTIFICACION.json --output evaluacion.json --language es
+```
+
+El comando escribe un único artefacto JSON determinista que contiene la custodia de entrada, la trayectoria de estado, las salidas de los seis observadores, ambas presentaciones lingüísticas, los contratos de fuente, los invariantes y la vinculación completa con la certificación del kernel.
 
 ## Frontera de desarrollo
 

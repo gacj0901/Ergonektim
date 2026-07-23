@@ -18,6 +18,11 @@ from .contracts import (
 )
 from .panel import AssessmentInputs, evaluate_assessment, write_assessment
 from .telemetry import TelemetricContract
+from .input_bundle import (
+    InputBundleError,
+    LoadedAssessmentBundle,
+    load_assessment_bundle,
+)
 
 __all__ = [
     "SignalContractError",
@@ -36,6 +41,9 @@ __all__ = [
     "evaluate_assessment",
     "write_assessment",
     "TelemetricContract",
+    "InputBundleError",
+    "LoadedAssessmentBundle",
+    "load_assessment_bundle",
 ]
 
 __version__ = "0.1.0.dev0"

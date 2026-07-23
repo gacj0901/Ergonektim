@@ -248,32 +248,34 @@ def causal_link_status(
     phi_register: object,
     displacement: ExternalDisplacement,
     observability_clear: object,
-    external_cause_labels: object,
+    external_cause_labels: object | None,
     *,
-    external_cause_labels_independent: bool,
+    external_cause_labels_independent: bool | None,
     tolerance: float = 1e-12,
 ) -> dict[str, Any]:
     """Partition local mismatch change between internal and external arms."""
 
     if not displacement.complete:
         raise ObserverContractError("Causal Link needs a complete displacement contract")
-    if not external_cause_labels_independent:
-        raise ObserverContractError("Causal Link labels must be independent")
     if not math.isfinite(tolerance) or tolerance < 0.0:
         raise ObserverContractError("invalid Causal Link tolerance")
     phi = _vector("phi_register", phi_register, np.float64)
     clear = _vector("observability_clear", observability_clear, np.bool_)
-    labels = _vector("external_cause_labels", external_cause_labels, object)
+    labels = None
+    if external_cause_labels is not None:
+        if external_cause_labels_independent is not True:
+            raise ObserverContractError("supplied Causal Link labels must be independent")
+        labels = _vector("external_cause_labels", external_cause_labels, object)
     psi = 0.5 + 0.4 * displacement.values
     valid = displacement.valid
     if psi.shape != valid.shape or psi.shape[0] != phi.size:
         raise ObserverContractError("Causal Link components must align")
-    if clear.shape != phi.shape or labels.shape != phi.shape:
+    if clear.shape != phi.shape or (labels is not None and labels.shape != phi.shape):
         raise ObserverContractError("Causal Link row inputs must align")
     if not np.isfinite(phi).all() or not np.isfinite(psi[valid]).all():
         raise ObserverContractError("Causal Link valid values must be finite")
     allowed = {"internal", "environmental", "joint", "none"}
-    if any(str(label) not in allowed for label in labels):
+    if labels is not None and any(str(label) not in allowed for label in labels):
         raise ObserverContractError("unsupported independent cause label")
 
     n, components = psi.shape
@@ -331,19 +333,28 @@ def causal_link_status(
     summaries: dict[str, Any] = {}
     for component, name in enumerate(displacement.component_names):
         mask = eligible[:, component]
-        matches = np.asarray(
-            [
-                bool(mask[row] and status[row, component] == expected[str(labels[row])])
-                for row in range(n)
-            ],
-            dtype=np.bool_,
-        )
+        matches = None
+        if labels is not None:
+            matches = np.asarray(
+                [
+                    bool(
+                        mask[row]
+                        and status[row, component] == expected[str(labels[row])]
+                    )
+                    for row in range(n)
+                ],
+                dtype=np.bool_,
+            )
         summaries[name] = {
             "counts": _counts(status[:, component]),
             "eligible_rows": int(mask.sum()),
-            "independent_label_matches": int(matches.sum()),
+            "independent_label_matches": (
+                None if matches is None else int(matches.sum())
+            ),
             "independent_label_match_fraction": (
-                None if not mask.any() else float(matches.sum() / mask.sum())
+                None
+                if matches is None or not mask.any()
+                else float(matches.sum() / mask.sum())
             ),
         }
     return {
@@ -358,7 +369,10 @@ def causal_link_status(
             "shapley_budget_identity_within_tolerance": exact,
             "telemetric_and_external_gate_respected": gate,
             "no_component_pooling": True,
-            "external_labels_independent": True,
+            "attribution_does_not_require_labels": True,
+            "external_labels_independent_when_supplied": bool(
+                labels is None or external_cause_labels_independent is True
+            ),
         },
     }
 

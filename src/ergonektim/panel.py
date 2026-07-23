@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import numpy as np
 import pandas as pd
@@ -42,8 +43,8 @@ class AssessmentInputs:
     telemetry_valid_columns: tuple[str, ...]
     displacement: ExternalDisplacement
     phi_register: np.ndarray
-    external_cause_labels: np.ndarray
-    external_cause_labels_independent: bool
+    external_cause_labels: np.ndarray | None
+    external_cause_labels_independent: bool | None
     operator_representation: OperatorRepresentation
 
 
@@ -79,10 +80,11 @@ def _validated_inputs(inputs: AssessmentInputs) -> dict[str, np.ndarray]:
         ),
         "planned": _vector("planned", inputs.planned, n, np.bool_),
         "phi_register": _vector("phi_register", inputs.phi_register, n, np.float64),
-        "external_cause_labels": _vector(
-            "external_cause_labels", inputs.external_cause_labels, n, object
-        ),
     }
+    if inputs.external_cause_labels is not None:
+        arrays["external_cause_labels"] = _vector(
+            "external_cause_labels", inputs.external_cause_labels, n, object
+        )
     for name in ("omega", "expected", "u_lambda", "effective_flow", "phi_register"):
         if not np.isfinite(arrays[name]).all():
             raise AssessmentContractError(f"{name} must be finite")
@@ -99,6 +101,7 @@ def evaluate_assessment(
     telemetric_contract: TelemetricContract,
     recertification_path: str | Path,
     kernel_config: Any | None = None,
+    input_binding: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run the frozen kernel and all six observers in one process."""
 
@@ -109,9 +112,33 @@ def evaluate_assessment(
 
     arrays = _validated_inputs(inputs)
     index = pd.DatetimeIndex(inputs.index)
-    cfg = KernelConfigV3() if kernel_config is None else kernel_config
+    if kernel_config is None:
+        cfg = KernelConfigV3()
+    elif isinstance(kernel_config, Mapping):
+        try:
+            cfg = KernelConfigV3(**dict(kernel_config))
+        except (TypeError, ValueError) as exc:
+            raise AssessmentContractError("invalid kernel_config mapping") from exc
+    else:
+        cfg = kernel_config
     if not isinstance(cfg, KernelConfigV3):
-        raise AssessmentContractError("kernel_config must be KernelConfigV3")
+        raise AssessmentContractError(
+            "kernel_config must be KernelConfigV3 or a complete mapping"
+        )
+    if input_binding is None:
+        binding_record: dict[str, Any] = {
+            "kind": "programmatic",
+            "verified": False,
+            "file_custody_available": False,
+        }
+    else:
+        try:
+            encoded_binding = json.dumps(
+                input_binding, sort_keys=True, allow_nan=False
+            )
+        except (TypeError, ValueError) as exc:
+            raise AssessmentContractError("input_binding must be finite JSON") from exc
+        binding_record = deepcopy(json.loads(encoded_binding))
     gamma = project_v3(
         arrays["omega"],
         arrays["expected"],
@@ -153,7 +180,7 @@ def evaluate_assessment(
         arrays["phi_register"],
         inputs.displacement,
         clear,
-        arrays["external_cause_labels"],
+        arrays.get("external_cause_labels"),
         external_cause_labels_independent=inputs.external_cause_labels_independent,
     )
     fidelity = estimation_fidelity_status(
@@ -292,6 +319,7 @@ def evaluate_assessment(
             "global_scalar_emitted": False,
         },
         "kernel_binding": binding,
+        "input_binding": binding_record,
         "kernel_config": asdict(cfg),
         "source_contracts": {
             "external_displacement": inputs.displacement.contract,

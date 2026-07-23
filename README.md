@@ -15,6 +15,7 @@ The current milestone provides:
 - the [identity constitution](IDENTITY.md);
 - the [diagnostic glossary](GLOSSARY.md);
 - a canonical bilingual diagnostic-signal contract;
+- a [universal closed input-bundle contract](INPUT_BUNDLE.md);
 - English and Spanish status catalogs; and
 - one causal, fail-closed execution path for all six observers;
 - a hash-verified binding to PRAMA Protokol `0.3.0` and its numeric recertification artifact; and
@@ -39,13 +40,19 @@ No global scalar or overall traffic light is emitted.
 
 ## One-run verification
 
-With the certified PRAMA Protokol `0.3.0` package installed, the complete synthetic fixture is evaluated with:
+Validate a canonical bundle and its certified kernel binding without evaluating:
 
 ```console
-python examples/run_synthetic_assessment.py --recertification PATH/TO/v0_3_0_numeric_recertification.json --output assessment.json
+ergonektim verify --bundle INPUT_BUNDLE --recertification RECERTIFICATION.json --language en
 ```
 
-The command writes one deterministic JSON artifact containing the state trajectory, all six observer outputs, both language presentations, source contracts, invariants, and the complete kernel-certification binding. The fixture contains no real data and supports verification only.
+Run the complete assessment:
+
+```console
+ergonektim assess --bundle INPUT_BUNDLE --recertification RECERTIFICATION.json --output assessment.json --language en
+```
+
+The command writes one deterministic JSON artifact containing input custody, the state trajectory, all six observer outputs, both language presentations, source contracts, invariants, and the complete kernel-certification binding.
 
 ## Development boundary
 

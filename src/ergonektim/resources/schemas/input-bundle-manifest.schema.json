@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/gacj0901/Ergonektim/schemas/input-bundle-manifest.v1.json",
+  "title": "ERGONEKTIM universal input-bundle manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "assessment_id",
+    "data_file",
+    "timestamp_column",
+    "core_columns",
+    "telemetry",
+    "external_displacement",
+    "operator_representation",
+    "kernel_config"
+  ],
+  "properties": {
+    "schema_version": { "const": "ergonektim.input-bundle.v1" },
+    "assessment_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "data_file": {
+      "type": "string",
+      "pattern": "^[^/\\\\]+\\.csv$"
+    },
+    "timestamp_column": { "$ref": "#/$defs/columnName" },
+    "core_columns": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "omega",
+        "expected",
+        "sigma_op",
+        "u_lambda",
+        "effective_flow",
+        "planned",
+        "q",
+        "phi_register"
+      ],
+      "properties": {
+        "omega": { "$ref": "#/$defs/columnName" },
+        "expected": { "$ref": "#/$defs/columnName" },
+        "sigma_op": { "$ref": "#/$defs/columnName" },
+        "u_lambda": { "$ref": "#/$defs/columnName" },
+        "effective_flow": { "$ref": "#/$defs/columnName" },
+        "planned": { "$ref": "#/$defs/columnName" },
+        "q": { "$ref": "#/$defs/columnName" },
+        "phi_register": { "$ref": "#/$defs/columnName" }
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_valid_columns", "contract"],
+      "properties": {
+        "source_valid_columns": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/columnName" }
+        },
+        "contract": { "$ref": "#/$defs/telemetricContract" }
+      }
+    },
+    "external_displacement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["components"],
+      "properties": {
+        "components": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/externalComponent" }
+        }
+      }
+    },
+    "operator_representation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "columns"],
+      "properties": {
+        "contract": { "$ref": "#/$defs/operatorContract" },
+        "columns": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "valid", "issued_at"],
+          "properties": {
+            "value": { "$ref": "#/$defs/columnName" },
+            "valid": { "$ref": "#/$defs/columnName" },
+            "issued_at": { "$ref": "#/$defs/columnName" }
+          }
+        }
+      }
+    },
+    "kernel_config": { "$ref": "#/$defs/kernelConfig" }
+  },
+  "$defs": {
+    "columnName": { "type": "string", "minLength": 1 },
+    "telemetricContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cadence_hours",
+        "g_per_step",
+        "eta",
+        "q_max",
+        "tol_s",
+        "initial_state",
+        "missingness_bias_direction",
+        "q_normalization_id"
+      ],
+      "properties": {
+        "cadence_hours": { "type": "integer", "minimum": 1 },
+        "g_per_step": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "eta": { "type": "number", "minimum": 0 },
+        "q_max": { "type": "number", "exclusiveMinimum": 0 },
+        "tol_s": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+        "initial_state": { "type": "number", "minimum": 0, "maximum": 1 },
+        "missingness_bias_direction": {
+          "enum": ["optimistic", "pessimistic", "two_sided", "unknown"]
+        },
+        "q_normalization_id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "externalComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "columns"],
+      "properties": {
+        "contract": { "$ref": "#/$defs/externalContract" },
+        "columns": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["observation", "reference", "valid", "reference_issued_at"],
+          "properties": {
+            "observation": { "$ref": "#/$defs/columnName" },
+            "reference": { "$ref": "#/$defs/columnName" },
+            "valid": { "$ref": "#/$defs/columnName" },
+            "reference_issued_at": { "$ref": "#/$defs/columnName" }
+          }
+        }
+      }
+    },
+    "externalContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "observation_role",
+        "reference_role",
+        "normalization",
+        "normalization_id",
+        "source_system",
+        "source_owner",
+        "stress_sign",
+        "fixed_scale",
+        "reference_floor",
+        "reference_available_by_t",
+        "independent_of_internal_register",
+        "independent_of_kernel"
+      ],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "observation_role": { "type": "string", "minLength": 1 },
+        "reference_role": { "type": "string", "minLength": 1 },
+        "normalization": { "enum": ["reference_relative", "fixed_scale"] },
+        "normalization_id": { "type": "string", "minLength": 1 },
+        "source_system": { "type": "string", "minLength": 1 },
+        "source_owner": { "type": "string", "minLength": 1 },
+        "stress_sign": { "enum": [-1, 1] },
+        "fixed_scale": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "number", "exclusiveMinimum": 0 }
+          ]
+        },
+        "reference_floor": { "type": "number", "minimum": 0 },
+        "reference_available_by_t": { "type": "boolean" },
+        "independent_of_internal_register": { "type": "boolean" },
+        "independent_of_kernel": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "normalization": { "const": "fixed_scale" } } },
+          "then": { "properties": { "fixed_scale": { "type": "number", "exclusiveMinimum": 0 } } },
+          "else": { "properties": { "fixed_scale": { "type": "null" } } }
+        }
+      ]
+    },
+    "operatorContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_system",
+        "source_owner",
+        "channel_role",
+        "normalization_id",
+        "units",
+        "coupled_operational_parameter",
+        "representation_target",
+        "available_by_t",
+        "generated_independently_from_prama",
+        "prama_variables_used"
+      ],
+      "properties": {
+        "source_system": { "type": "string", "minLength": 1 },
+        "source_owner": { "type": "string", "minLength": 1 },
+        "channel_role": { "type": "string", "minLength": 1 },
+        "normalization_id": { "type": "string", "minLength": 1 },
+        "units": { "type": "string", "minLength": 1 },
+        "coupled_operational_parameter": { "type": "string", "minLength": 1 },
+        "representation_target": { "const": "structural_excess_xi_minus_theta" },
+        "available_by_t": { "const": true },
+        "generated_independently_from_prama": { "const": true },
+        "prama_variables_used": { "type": "array", "maxItems": 0 }
+      }
+    },
+    "kernelConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "h",
+        "tau",
+        "theta_scale",
+        "lambda_0",
+        "lambda_min",
+        "lambda_max",
+        "kappa_v3",
+        "g_smooth",
+        "delta_ref"
+      ],
+      "properties": {
+        "h": { "type": "number", "exclusiveMinimum": 0 },
+        "tau": { "type": "number", "exclusiveMinimum": 0 },
+        "theta_scale": { "type": "number", "exclusiveMinimum": 0 },
+        "lambda_0": { "type": "number", "minimum": 0 },
+        "lambda_min": { "type": "number", "minimum": 0 },
+        "lambda_max": { "type": "number", "minimum": 0 },
+        "kappa_v3": { "type": "number", "minimum": 0 },
+        "g_smooth": { "type": "integer", "minimum": 1 },
+        "delta_ref": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}

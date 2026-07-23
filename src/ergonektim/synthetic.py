@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from dataclasses import asdict
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -15,6 +17,7 @@ from .contracts import (
 )
 from .panel import AssessmentInputs
 from .telemetry import TelemetricContract
+from .input_bundle import SCHEMA_VERSION, canonical_manifest, contract_dict
 
 
 def synthetic_assessment_fixture() -> tuple[AssessmentInputs, TelemetricContract]:
@@ -169,3 +172,121 @@ def fixture_record() -> dict[str, Any]:
         "real_data_accessed": False,
         "outcomes_accessed": False,
     }
+
+
+def write_synthetic_bundle(path: str | Path) -> Path:
+    """Write one canonical two-file bundle for CLI and packaging verification."""
+
+    target = Path(path)
+    if target.exists():
+        raise FileExistsError("synthetic bundle target must not already exist")
+    target.mkdir(parents=True)
+    inputs, telemetric_contract = synthetic_assessment_fixture()
+    from prama_protokol import KernelConfigV3
+
+    timestamp_column = "timestamp_utc"
+    frame = pd.DataFrame(
+        {
+            timestamp_column: inputs.index,
+            "omega": inputs.omega,
+            "expected": inputs.expected,
+            "sigma_op": inputs.sigma_op,
+            "u_lambda": inputs.u_lambda,
+            "effective_flow": inputs.effective_flow,
+            "planned": inputs.planned,
+            "q": inputs.telemetry["q"].to_numpy(),
+            "phi_register": inputs.phi_register,
+            "telemetry_demand_valid": inputs.telemetry[
+                "demand_valid"
+            ].to_numpy(),
+            "telemetry_forecast_valid": inputs.telemetry[
+                "forecast_valid"
+            ].to_numpy(),
+        }
+    )
+    component_records: list[dict[str, Any]] = []
+    for column, name in enumerate(inputs.displacement.component_names):
+        prefix = f"w__{name}"
+        observation_column = prefix + "__observation"
+        reference_column = prefix + "__reference"
+        valid_column = prefix + "__valid"
+        issue_column = prefix + "__reference_issued_at"
+        frame[observation_column] = inputs.displacement.values[:, column]
+        frame[reference_column] = np.zeros(len(inputs.index), dtype=np.float64)
+        frame[valid_column] = inputs.displacement.valid[:, column]
+        frame[issue_column] = inputs.index - pd.Timedelta(hours=1)
+        component_records.append(
+            {
+                "contract": contract_dict(
+                    ExternalDisplacementChannel(
+                        name=name,
+                        observation_role="synthetic_normalized_observation",
+                        reference_role="synthetic_zero_reference",
+                        normalization="fixed_scale",
+                        normalization_id="synthetic_identity_scale_v1",
+                        source_system="synthetic_external_fixture",
+                        source_owner="synthetic_independent_source",
+                        fixed_scale=1.0,
+                    )
+                ),
+                "columns": {
+                    "observation": observation_column,
+                    "reference": reference_column,
+                    "valid": valid_column,
+                    "reference_issued_at": issue_column,
+                },
+            }
+        )
+
+    operator_columns = {
+        "value": "operator_R__value",
+        "valid": "operator_R__valid",
+        "issued_at": "operator_R__issued_at",
+    }
+    frame[operator_columns["value"]] = inputs.operator_representation.values
+    frame[operator_columns["valid"]] = inputs.operator_representation.valid
+    frame[operator_columns["issued_at"]] = inputs.index
+    operator_metadata = dict(inputs.operator_representation.contract["metadata"])
+    operator_metadata["prama_variables_used"] = tuple(
+        operator_metadata["prama_variables_used"]
+    )
+    operator_contract = OperatorRepresentationContract(**operator_metadata)
+    manifest = {
+        "schema_version": SCHEMA_VERSION,
+        "assessment_id": "synthetic-shared-stream-v1",
+        "data_file": "timeseries.csv",
+        "timestamp_column": timestamp_column,
+        "core_columns": {
+            "omega": "omega",
+            "expected": "expected",
+            "sigma_op": "sigma_op",
+            "u_lambda": "u_lambda",
+            "effective_flow": "effective_flow",
+            "planned": "planned",
+            "q": "q",
+            "phi_register": "phi_register",
+        },
+        "telemetry": {
+            "source_valid_columns": [
+                "telemetry_demand_valid",
+                "telemetry_forecast_valid",
+            ],
+            "contract": asdict(telemetric_contract),
+        },
+        "external_displacement": {"components": component_records},
+        "operator_representation": {
+            "contract": contract_dict(operator_contract),
+            "columns": operator_columns,
+        },
+        "kernel_config": asdict(KernelConfigV3()),
+    }
+    (target / "manifest.json").write_bytes(canonical_manifest(manifest))
+    frame.to_csv(
+        target / "timeseries.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+        date_format="%Y-%m-%dT%H:%M:%SZ",
+        float_format="%.17g",
+    )
+    return target

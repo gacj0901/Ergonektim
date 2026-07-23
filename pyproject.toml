@@ -21,6 +21,9 @@ classifiers = [
   "Topic :: Scientific/Engineering",
 ]
 
+[project.scripts]
+ergonektim = "ergonektim.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
