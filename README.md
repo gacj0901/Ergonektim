@@ -54,6 +54,18 @@ ergonektim assess --bundle INPUT_BUNDLE --recertification RECERTIFICATION.json -
 
 The command writes one deterministic JSON artifact containing input custody, the state trajectory, all six observer outputs, both language presentations, source contracts, invariants, and the complete kernel-certification binding.
 
+## Bilingual assessment room
+
+The [`dashboard`](dashboard/) directory contains the product-facing assessment room. It consumes a completed `ergonektim.assessment.v1` artifact entirely in the browser and provides:
+
+- separate readings for all six observers;
+- input, kernel, and recertification custody;
+- structural trajectory and evidence inspection;
+- English/Spanish presentation switching; and
+- severity filtering without scientific recomputation.
+
+The dashboard never uploads the opened assessment, recalculates observer states, or emits an overall score. A private deployed version is available at [ergonektim.gacj-xci.chatgpt.site](https://ergonektim.gacj-xci.chatgpt.site).
+
 ## Development boundary
 
 Only consolidated product milestones belong here. Experimental attempts, private data, local absolute paths, and outcome-driven tuning remain outside this repository.

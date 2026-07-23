@@ -54,6 +54,18 @@ ergonektim assess --bundle PAQUETE_ENTRADA --recertification RECERTIFICACION.jso
 
 El comando escribe un único artefacto JSON determinista que contiene la custodia de entrada, la trayectoria de estado, las salidas de los seis observadores, ambas presentaciones lingüísticas, los contratos de fuente, los invariantes y la vinculación completa con la certificación del kernel.
 
+## Sala bilingüe de evaluación
+
+El directorio [`dashboard`](dashboard/) contiene la sala de evaluación orientada al producto. Consume íntegramente en el navegador un artefacto `ergonektim.assessment.v1` ya terminado y proporciona:
+
+- lecturas separadas de los seis observadores;
+- custodia de entrada, kernel y recertificación;
+- inspección de trayectoria estructural y evidencia;
+- conmutación de presentación español/inglés; y
+- filtrado por severidad sin recomputación científica.
+
+El dashboard nunca transmite la evaluación abierta, recalcula estados de observador ni emite una puntuación general. Hay una versión privada desplegada en [ergonektim.gacj-xci.chatgpt.site](https://ergonektim.gacj-xci.chatgpt.site).
+
 ## Frontera de desarrollo
 
 Aquí solo pertenecen hitos consolidados del producto. Los intentos experimentales, datos privados, rutas locales absolutas y ajustes guiados por outcomes permanecen fuera de este repositorio.

@@ -5,3 +5,7 @@ __pycache__/
 build/
 dist/
 *.egg-info/
+
+# The dashboard's Sites build adapter is source code, not a generated build.
+!dashboard/build/
+!dashboard/build/sites-vite-plugin.ts
