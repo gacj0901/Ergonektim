@@ -102,9 +102,9 @@ Estos campos aparecen únicamente cuando una evaluación declara una fuente de g
 
 | Símbolo o campo | Rol | Definición y uso diagnóstico |
 |---|---|---|
-| `w_j(t)` | Entrada | Componente firmado de desplazamiento externo con observación, referencia causal, normalización, validez y procedencia propias. Los componentes no se agrupan por defecto. |
+| `w_j(t)` | Entrada | Componente de desplazamiento externo con observación, referencia causal, normalización firmada o absoluta declarada, validez y procedencia propias. Los componentes no se agrupan por defecto. |
 | `w_valid` | Evidencia | Máscara de elegibilidad de cada componente externo. Los valores inválidos quedan en cuarentena y no se imputan. |
-| `Phi`, `Φ` | Entrada | Registro interno u organizacional declarado que entra en la comparación de atribución. |
+| `Phi`, `Φ` | Entrada | Registro interno u organizacional declarado y ofrecido a la comparación de atribución. Causal Link permanece fail-closed hasta validar contractualmente su fuente, construcción causal, gate de validez, independencia de outcomes y puente A0-a-E1–E5. |
 | `Psi_j`, `Ψ_j` | Evidencia | Brazo de respuesta externa asociado al componente `j`. |
 | `mismatch` | Evidencia | Discrepancia local `abs(Φ-Ψ_j)`. |
 | `mismatch_change` | Evidencia | Cambio de la discrepancia respecto de la fila elegible anterior. Valores no positivos significan ausencia de deterioro nuevo bajo este contrato local. |

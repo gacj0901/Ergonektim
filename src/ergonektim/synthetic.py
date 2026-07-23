@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 
 from .contracts import (
+    CausalRegisterContract,
     ExternalDisplacementChannel,
     OperatorRepresentationContract,
     realize_external_displacement,
@@ -154,6 +155,14 @@ def synthetic_assessment_fixture() -> tuple[AssessmentInputs, TelemetricContract
             telemetry_valid_columns=("demand_valid", "forecast_valid"),
             displacement=displacement,
             phi_register=phi,
+            causal_register_contract=CausalRegisterContract(
+                source_system="synthetic_internal_register",
+                source_owner="synthetic_fixture",
+                register_role="internal_mismatch_phi",
+                construction_id="synthetic_phi_experimental_v1",
+                a0_to_e1_e5_validated=False,
+                experimental_only=True,
+            ),
             external_cause_labels=labels,
             external_cause_labels_independent=True,
             operator_representation=representation,
@@ -272,6 +281,9 @@ def write_synthetic_bundle(path: str | Path) -> Path:
                 "telemetry_forecast_valid",
             ],
             "contract": asdict(telemetric_contract),
+        },
+        "causal_register": {
+            "contract": contract_dict(inputs.causal_register_contract)
         },
         "external_displacement": {"components": component_records},
         "operator_representation": {

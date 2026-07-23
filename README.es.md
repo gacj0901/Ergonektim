@@ -8,7 +8,7 @@ ERGONEKTIM es un producto bilingüe y auditable que convierte observaciones elé
 
 ## Estatus actual
 
-`0.1.0.dev0` — construcción ejecutable del contrato de producto. No se formula ninguna afirmación predictiva ni de operación en tiempo real.
+`0.1.0.dev2` — construcción ejecutable del contrato de producto. No se formula ninguna afirmación predictiva ni de operación en tiempo real.
 
 El hito actual proporciona:
 
@@ -18,6 +18,10 @@ El hito actual proporciona:
 - un [contrato universal y cerrado de entrada](INPUT_BUNDLE.es.md);
 - catálogos de estados en inglés y español; y
 - una ruta causal y fail-closed para ejecutar conjuntamente los seis observadores;
+- un contrato explícito de custodia de `Phi` que mantiene Causal Link cerrado
+  hasta validar el puente declarado A0-a-E1–E5;
+- normalizaciones de desplazamiento externo firmada, absoluta relativa a la
+  referencia y de escala fija, sin clipping ni agregación escalar;
 - una vinculación verificada por hash con PRAMA Protokol `0.3.0` y su artefacto de recertificación numérica; y
 - pruebas ejecutables de paridad, libro mayor, compuertas e invariantes de atribución.
 

@@ -59,7 +59,8 @@ test("keeps presentation separate from scientific computation", async () => {
   assert.match(page, /ergonektim\.assessment\.v1/);
   assert.match(page, /application\/json,\.json/);
   assert.match(page, /await file\.text\(\)/);
-  assert.match(page, /window\.localStorage\.setItem\("ergonektim-locale"/);
+  assert.match(page, /LOCALE_STORAGE_KEY = "ergonektim-locale"/);
+  assert.match(page, /window\.localStorage\.setItem\(LOCALE_STORAGE_KEY/);
   assert.match(page, /global_scalar_emitted/);
   assert.match(page, /outcomes_accessed/);
   assert.doesNotMatch(page, /\bfetch\s*\(/);

@@ -10,10 +10,15 @@ import numpy as np
 import pandas as pd
 
 
-W_CONTRACT_ID = "ergonektim.external-displacement.w.v1"
+W_CONTRACT_ID = "ergonektim.external-displacement.w.v1.1"
+PHI_CONTRACT_ID = "ergonektim.causal-register.Phi.v1"
 R_CONTRACT_ID = "ergonektim.operator-representation.R.v1"
 R_TARGET = "structural_excess_xi_minus_theta"
-NORMALIZATIONS = {"reference_relative", "fixed_scale"}
+NORMALIZATIONS = {
+    "reference_relative",
+    "absolute_reference_relative",
+    "fixed_scale",
+}
 
 
 class ExternalContractError(ValueError):
@@ -53,6 +58,10 @@ class ExternalDisplacementChannel:
             raise ExternalContractError("unsupported external displacement normalization")
         if self.stress_sign not in {-1, 1}:
             raise ExternalContractError("stress_sign must be -1 or +1")
+        if self.normalization == "absolute_reference_relative" and self.stress_sign != 1:
+            raise ExternalContractError(
+                "absolute_reference_relative requires stress_sign=+1"
+            )
         if self.normalization == "fixed_scale":
             if (
                 self.fixed_scale is None
@@ -64,7 +73,7 @@ class ExternalDisplacementChannel:
                 )
         elif self.fixed_scale is not None:
             raise ExternalContractError(
-                "reference_relative normalization must not declare fixed_scale"
+                "reference-relative normalizations must not declare fixed_scale"
             )
         if not math.isfinite(self.reference_floor) or self.reference_floor < 0.0:
             raise ExternalContractError("reference_floor must be finite and nonnegative")
@@ -87,6 +96,75 @@ class ExternalDisplacement:
     @property
     def complete(self) -> bool:
         return bool(self.contract["complete"])
+
+
+@dataclass(frozen=True)
+class CausalRegisterContract:
+    """Custody boundary for the internal causal register ``Phi``."""
+
+    source_system: str
+    source_owner: str
+    register_role: str
+    construction_id: str
+    available_by_t: bool = True
+    source_validity_gated: bool = True
+    independent_of_external_displacement: bool = True
+    outcome_inputs_used: bool = False
+    a0_to_e1_e5_validated: bool = False
+    experimental_only: bool = True
+
+    def validate(self) -> None:
+        text_fields = (
+            self.source_system,
+            self.source_owner,
+            self.register_role,
+            self.construction_id,
+        )
+        if any(not value.strip() for value in text_fields):
+            raise ExternalContractError("causal register metadata must be nonempty")
+        if not self.available_by_t:
+            raise ExternalContractError("causal register must be available by t")
+        if not self.source_validity_gated:
+            raise ExternalContractError("causal register must inherit source validity")
+        if not self.independent_of_external_displacement:
+            raise ExternalContractError(
+                "causal register cannot be constructed from external displacement"
+            )
+        if self.outcome_inputs_used:
+            raise ExternalContractError(
+                "causal register construction cannot use evaluation outcomes"
+            )
+        if self.a0_to_e1_e5_validated and self.experimental_only:
+            raise ExternalContractError(
+                "validated causal register cannot remain experimental_only"
+            )
+        if not self.a0_to_e1_e5_validated and not self.experimental_only:
+            raise ExternalContractError(
+                "unvalidated causal register must remain experimental_only"
+            )
+
+    @property
+    def conformant(self) -> bool:
+        return bool(self.a0_to_e1_e5_validated and not self.experimental_only)
+
+    def record(self) -> dict[str, Any]:
+        self.validate()
+        return {
+            "contract_id": PHI_CONTRACT_ID,
+            "complete": self.conformant,
+            "observer_emission_authorized": self.conformant,
+            "metadata": asdict(self),
+            "checks": {
+                "available_by_t": self.available_by_t,
+                "source_validity_gated": self.source_validity_gated,
+                "independent_of_external_displacement": (
+                    self.independent_of_external_displacement
+                ),
+                "outcome_inputs_absent": not self.outcome_inputs_used,
+                "a0_to_e1_e5_validated": self.a0_to_e1_e5_validated,
+                "operational_not_experimental": not self.experimental_only,
+            },
+        }
 
 
 @dataclass(frozen=True)
@@ -213,7 +291,10 @@ def realize_external_displacement(
         causal[:, column] = issue_time <= stamps
 
         finite = np.isfinite(observed) & np.isfinite(reference)
-        if channel.normalization == "reference_relative":
+        if channel.normalization in {
+            "reference_relative",
+            "absolute_reference_relative",
+        }:
             denominator = np.abs(reference)
             denominator_valid = denominator > channel.reference_floor
         else:
@@ -222,11 +303,17 @@ def realize_external_displacement(
 
         raw = np.full(n, np.nan, dtype=np.float64)
         computable = finite & denominator_valid
-        raw[computable] = (
-            channel.stress_sign
-            * (observed[computable] - reference[computable])
-            / denominator[computable]
-        )
+        if channel.normalization == "absolute_reference_relative":
+            raw[computable] = (
+                np.abs(observed[computable] - reference[computable])
+                / denominator[computable]
+            )
+        else:
+            raw[computable] = (
+                channel.stress_sign
+                * (observed[computable] - reference[computable])
+                / denominator[computable]
+            )
         in_range = np.isfinite(raw) & (np.abs(raw) <= 1.0)
         component_valid = declared_valid & causal[:, column] & computable & in_range
         values[component_valid, column] = raw[component_valid]

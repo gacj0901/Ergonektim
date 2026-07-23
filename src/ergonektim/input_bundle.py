@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 
 from .contracts import (
+    CausalRegisterContract,
     ExternalDisplacementChannel,
     OperatorRepresentationContract,
     realize_external_displacement,
@@ -26,7 +27,7 @@ from .panel import AssessmentInputs
 from .telemetry import TelemetricContract
 
 
-SCHEMA_VERSION = "ergonektim.input-bundle.v1"
+SCHEMA_VERSION = "ergonektim.input-bundle.v1.1"
 MANIFEST_FILE = "manifest.json"
 CORE_ROLES = {
     "omega",
@@ -261,6 +262,36 @@ def _channel_contract(value: object, position: int) -> ExternalDisplacementChann
     return channel
 
 
+def _causal_register_contract(value: object) -> CausalRegisterContract:
+    required = {field.name for field in fields(CausalRegisterContract)}
+    payload = _closed_mapping(value, required, "causal_register.contract")
+    boolean_fields = {
+        "available_by_t",
+        "source_validity_gated",
+        "independent_of_external_displacement",
+        "outcome_inputs_used",
+        "a0_to_e1_e5_validated",
+        "experimental_only",
+    }
+    if any(not isinstance(payload[name], bool) for name in boolean_fields):
+        raise InputBundleError("causal register guards must be boolean")
+    for name in (
+        "source_system",
+        "source_owner",
+        "register_role",
+        "construction_id",
+    ):
+        payload[name] = _nonempty_string(
+            payload[name], f"causal_register.contract.{name}"
+        )
+    try:
+        contract = CausalRegisterContract(**payload)
+        contract.validate()
+    except (TypeError, ValueError) as exc:
+        raise InputBundleError("causal_register.contract is invalid") from exc
+    return contract
+
+
 def _operator_contract(value: object) -> OperatorRepresentationContract:
     required = {field.name for field in fields(OperatorRepresentationContract)}
     payload = _closed_mapping(value, required, "operator_representation.contract")
@@ -316,6 +347,7 @@ def load_assessment_bundle(path: str | Path) -> LoadedAssessmentBundle:
             "timestamp_column",
             "core_columns",
             "telemetry",
+            "causal_register",
             "external_displacement",
             "operator_representation",
             "kernel_config",
@@ -361,6 +393,12 @@ def load_assessment_bundle(path: str | Path) -> LoadedAssessmentBundle:
     if len(set(source_columns)) != len(source_columns):
         raise InputBundleError("telemetry source-valid columns must be unique")
     telemetric_contract = _telemetric_contract(telemetry["contract"])
+    causal_register = _closed_mapping(
+        root["causal_register"], {"contract"}, "causal_register"
+    )
+    causal_register_contract = _causal_register_contract(
+        causal_register["contract"]
+    )
 
     external = _closed_mapping(
         root["external_displacement"], {"components"}, "external_displacement"
@@ -570,6 +608,7 @@ def load_assessment_bundle(path: str | Path) -> LoadedAssessmentBundle:
             telemetry_valid_columns=tuple(source_columns),
             displacement=displacement,
             phi_register=phi_register,
+            causal_register_contract=causal_register_contract,
             external_cause_labels=None,
             external_cause_labels_independent=None,
             operator_representation=representation,

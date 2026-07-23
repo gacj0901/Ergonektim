@@ -26,7 +26,9 @@ class InputBundleTests(unittest.TestCase):
             loaded = load_assessment_bundle(bundle)
             binding = loaded.input_binding
             self.assertTrue(binding["verified"])
-            self.assertEqual(binding["schema_version"], "ergonektim.input-bundle.v1")
+            self.assertEqual(
+                binding["schema_version"], "ergonektim.input-bundle.v1.1"
+            )
             self.assertEqual(binding["rows"], 240)
             self.assertEqual(len(binding["manifest_sha256"]), 64)
             self.assertEqual(len(binding["data_sha256"]), 64)
@@ -35,6 +37,7 @@ class InputBundleTests(unittest.TestCase):
             self.assertFalse(binding["outcome_roles_declared"])
             self.assertFalse(binding["outcome_columns_accessed"])
             self.assertIsNone(loaded.inputs.external_cause_labels)
+            self.assertFalse(loaded.inputs.causal_register_contract.conformant)
 
     def test_undeclared_column_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -83,7 +86,7 @@ class InputBundleTests(unittest.TestCase):
         self.assertFalse(schema["additionalProperties"])
         self.assertEqual(
             schema["properties"]["schema_version"]["const"],
-            "ergonektim.input-bundle.v1",
+            "ergonektim.input-bundle.v1.1",
         )
 
 

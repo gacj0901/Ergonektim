@@ -4,10 +4,58 @@ import unittest
 
 import numpy as np
 
-from ergonektim.observers import performance_status, stability_status
+from ergonektim.contracts import CausalRegisterContract
+from ergonektim.observers import (
+    causal_link_status,
+    performance_status,
+    stability_status,
+)
+from ergonektim.synthetic import synthetic_assessment_fixture
 
 
 class ObserverSemanticTests(unittest.TestCase):
+    def test_causal_link_fails_closed_without_conformant_phi(self) -> None:
+        inputs, _ = synthetic_assessment_fixture()
+        result = causal_link_status(
+            inputs.phi_register,
+            inputs.displacement,
+            np.ones(len(inputs.index), dtype=np.bool_),
+            None,
+            causal_register_contract=inputs.causal_register_contract,
+            external_cause_labels_independent=None,
+        )
+        self.assertFalse(result["summary"]["observer_emits"])
+        self.assertFalse(result["eligible"].any())
+        self.assertEqual(
+            set(result["status_path"].ravel()), {"instrument_indeterminate"}
+        )
+        self.assertTrue(
+            result["invariants"][
+                "observer_fail_closed_without_conformant_phi"
+            ]
+        )
+
+    def test_causal_link_emits_only_with_conformant_phi(self) -> None:
+        inputs, _ = synthetic_assessment_fixture()
+        contract = CausalRegisterContract(
+            source_system="contract_test_register",
+            source_owner="contract_test_owner",
+            register_role="internal_mismatch_phi",
+            construction_id="contract_test_phi_v1",
+            a0_to_e1_e5_validated=True,
+            experimental_only=False,
+        )
+        result = causal_link_status(
+            inputs.phi_register,
+            inputs.displacement,
+            np.ones(len(inputs.index), dtype=np.bool_),
+            None,
+            causal_register_contract=contract,
+            external_cause_labels_independent=None,
+        )
+        self.assertTrue(result["summary"]["observer_emits"])
+        self.assertTrue(result["eligible"].any())
+
     def test_negative_gradient_is_not_named_as_collapse(self) -> None:
         result = stability_status(
             sigma_op=np.array([True, True]),

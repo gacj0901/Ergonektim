@@ -10,6 +10,7 @@ from .signals import (
     validate_signal,
 )
 from .contracts import (
+    CausalRegisterContract,
     ExternalDisplacementChannel,
     ExternalContractError,
     OperatorRepresentationContract,
@@ -32,6 +33,7 @@ __all__ = [
     "status_codes",
     "validate_resource_parity",
     "validate_signal",
+    "CausalRegisterContract",
     "ExternalDisplacementChannel",
     "ExternalContractError",
     "OperatorRepresentationContract",
@@ -46,4 +48,4 @@ __all__ = [
     "load_assessment_bundle",
 ]
 
-__version__ = "0.1.0.dev0"
+__version__ = "0.1.0.dev2"

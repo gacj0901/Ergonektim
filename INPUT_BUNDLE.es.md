@@ -10,7 +10,7 @@ paquete/
 └── timeseries.csv
 ```
 
-El manifiesto usa el esquema `ergonektim.input-bundle.v1`. Su JSON Schema se empaqueta en `resources/schemas/input-bundle-manifest.schema.json`; el cargador ejecutable conserva la autoridad y aplica comprobaciones causales y entre campos adicionales.
+El manifiesto usa el esquema `ergonektim.input-bundle.v1.1`. Su JSON Schema se empaqueta en `resources/schemas/input-bundle-manifest.schema.json`; el cargador ejecutable conserva la autoridad y aplica comprobaciones causales y entre campos adicionales.
 
 ## Contrato por roles
 
@@ -26,9 +26,13 @@ Los nombres de columna son locales. El manifiesto los vincula con estos roles ob
 | `effective_flow` | Canal de flujo efectivo declarado para el guard de anti-sobreoptimización. |
 | `planned` | Marcador booleano de mantenimiento o intervención planificada. |
 | `q` | Drenaje telemétrico normalizado del intervalo causal de observabilidad. |
-| `phi_register` | Registro interno de desajuste usado por Causal Link. |
+| `phi_register` | Registro interno de desajuste ofrecido a Causal Link; la columna por sí sola nunca autoriza atribución. |
 
 La sección de telemetría declara una o más columnas de validez de fuente y el contrato completo del intervalo. La telemetría ausente o inválida jamás se imputa como observable.
+
+## Registro causal interno \(\Phi\)
+
+`causal_register.contract` declara fuente, propietario, rol, construcción, disponibilidad causal, gate de validez, independencia de outcomes e independencia respecto de \(w\). Causal Link solo emite cuando `a0_to_e1_e5_validated` es verdadero y `experimental_only` es falso. En caso contrario, el observador permanece `instrument_indeterminate`; un componente experimental puede estudiarse fuera del observador operacional sin promoverlo a atribución.
 
 ## Desplazamiento externo \(w\)
 
@@ -44,11 +48,13 @@ El registro \(w\) resultante se observa y se contrata para la atribución por co
 
 Los componentes nunca se fusionan en un escalar global. Una referencia emitida después del timestamp evaluado queda en cuarentena. La selección de componentes depende de la autoridad: el formato no prescribe demanda, viento, intercambio, hidrología, clima ni otro canal de dominio.
 
+Las normalizaciones admitidas son relativa firmada, absoluta relativa a la referencia y de escala fija firmada. La forma absoluta exige `stress_sign = 1` y corresponde cuando la magnitud de la desviación —no su dirección— es la cantidad de estrés declarada.
+
 ## Representación externa del operador \(R(t)\)
 
 La representación del operador apunta a `structural_excess_xi_minus_theta`. Debe identificar propietario externo, acople operacional, normalización, unidades, validez y tiempo de emisión. Debe generarse independientemente de PRAMA y declarar una lista `prama_variables_used` vacía.
 
-Causal Link no requiere etiquetas de evaluación. Las etiquetas independientes pueden utilizarse en un estudio de validación separado, pero la atribución operacional se calcula sin ellas.
+Causal Link no requiere etiquetas de evaluación una vez que \(\Phi\) es conforme. Las etiquetas independientes pueden utilizarse en un estudio de validación separado, pero no pueden autorizar atribución operacional.
 
 ## Regla de datos cerrados y custodia
 

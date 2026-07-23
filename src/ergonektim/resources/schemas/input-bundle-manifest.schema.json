@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/gacj0901/Ergonektim/schemas/input-bundle-manifest.v1.json",
+  "$id": "https://github.com/gacj0901/Ergonektim/schemas/input-bundle-manifest.v1.1.json",
   "title": "ERGONEKTIM universal input-bundle manifest",
   "type": "object",
   "additionalProperties": false,
@@ -11,12 +11,13 @@
     "timestamp_column",
     "core_columns",
     "telemetry",
+    "causal_register",
     "external_displacement",
     "operator_representation",
     "kernel_config"
   ],
   "properties": {
-    "schema_version": { "const": "ergonektim.input-bundle.v1" },
+    "schema_version": { "const": "ergonektim.input-bundle.v1.1" },
     "assessment_id": {
       "type": "string",
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
@@ -62,6 +63,14 @@
           "items": { "$ref": "#/$defs/columnName" }
         },
         "contract": { "$ref": "#/$defs/telemetricContract" }
+      }
+    },
+    "causal_register": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract"],
+      "properties": {
+        "contract": { "$ref": "#/$defs/causalRegisterContract" }
       }
     },
     "external_displacement": {
@@ -165,7 +174,13 @@
         "name": { "type": "string", "minLength": 1 },
         "observation_role": { "type": "string", "minLength": 1 },
         "reference_role": { "type": "string", "minLength": 1 },
-        "normalization": { "enum": ["reference_relative", "fixed_scale"] },
+        "normalization": {
+          "enum": [
+            "reference_relative",
+            "absolute_reference_relative",
+            "fixed_scale"
+          ]
+        },
         "normalization_id": { "type": "string", "minLength": 1 },
         "source_system": { "type": "string", "minLength": 1 },
         "source_owner": { "type": "string", "minLength": 1 },
@@ -186,6 +201,51 @@
           "if": { "properties": { "normalization": { "const": "fixed_scale" } } },
           "then": { "properties": { "fixed_scale": { "type": "number", "exclusiveMinimum": 0 } } },
           "else": { "properties": { "fixed_scale": { "type": "null" } } }
+        },
+        {
+          "if": {
+            "properties": {
+              "normalization": { "const": "absolute_reference_relative" }
+            }
+          },
+          "then": { "properties": { "stress_sign": { "const": 1 } } }
+        }
+      ]
+    },
+    "causalRegisterContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_system",
+        "source_owner",
+        "register_role",
+        "construction_id",
+        "available_by_t",
+        "source_validity_gated",
+        "independent_of_external_displacement",
+        "outcome_inputs_used",
+        "a0_to_e1_e5_validated",
+        "experimental_only"
+      ],
+      "properties": {
+        "source_system": { "type": "string", "minLength": 1 },
+        "source_owner": { "type": "string", "minLength": 1 },
+        "register_role": { "type": "string", "minLength": 1 },
+        "construction_id": { "type": "string", "minLength": 1 },
+        "available_by_t": { "const": true },
+        "source_validity_gated": { "const": true },
+        "independent_of_external_displacement": { "const": true },
+        "outcome_inputs_used": { "const": false },
+        "a0_to_e1_e5_validated": { "type": "boolean" },
+        "experimental_only": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "a0_to_e1_e5_validated": { "const": true } }
+          },
+          "then": { "properties": { "experimental_only": { "const": false } } },
+          "else": { "properties": { "experimental_only": { "const": true } } }
         }
       ]
     },

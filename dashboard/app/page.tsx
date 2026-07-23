@@ -1,8 +1,36 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 type Locale = "es" | "en";
+const LOCALE_STORAGE_KEY = "ergonektim-locale";
+const LOCALE_CHANGE_EVENT = "ergonektim-locale-change";
+
+function localeSnapshot(): Locale {
+  const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+  return stored === "en" ? "en" : "es";
+}
+
+function localeServerSnapshot(): Locale {
+  return "es";
+}
+
+function subscribeLocale(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(LOCALE_CHANGE_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(LOCALE_CHANGE_EVENT, onStoreChange);
+  };
+}
+
 type Severity =
   | "favorable"
   | "informational"
@@ -485,7 +513,11 @@ function severityLabel(severity: Severity, locale: Locale) {
 }
 
 export default function Home() {
-  const [locale, setLocale] = useState<Locale>("es");
+  const locale = useSyncExternalStore(
+    subscribeLocale,
+    localeSnapshot,
+    localeServerSnapshot,
+  );
   const [assessment, setAssessment] = useState<Assessment>(demoAssessment);
   const [selectedObserver, setSelectedObserver] = useState<ObserverKey>("stability_status");
   const [severityFilter, setSeverityFilter] = useState<Severity | "all">("all");
@@ -497,12 +529,6 @@ export default function Home() {
   const t = copy[locale];
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("ergonektim-locale");
-    if (stored === "es" || stored === "en") setLocale(stored);
-  }, []);
-
-  useEffect(() => {
-    window.localStorage.setItem("ergonektim-locale", locale);
     document.documentElement.lang = locale;
   }, [locale]);
 
@@ -527,7 +553,8 @@ export default function Home() {
   const selectedPresentation = primary?.presentations?.[locale];
 
   function changeLocale(next: Locale) {
-    setLocale(next);
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
+    window.dispatchEvent(new Event(LOCALE_CHANGE_EVENT));
   }
 
   async function openArtifact(event: ChangeEvent<HTMLInputElement>) {

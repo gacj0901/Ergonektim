@@ -102,9 +102,9 @@ These fields are present only when an assessment declares a physical graph sourc
 
 | Symbol or field | Role | Definition and diagnostic use |
 |---|---|---|
-| `w_j(t)` | Input | Signed external displacement component with its own observation, causal reference, normalization, validity, and provenance. Components are not pooled by default. |
+| `w_j(t)` | Input | External displacement component with its own observation, causal reference, declared signed or absolute normalization, validity, and provenance. Components are not pooled by default. |
 | `w_valid` | Evidence | Eligibility mask for each external component. Invalid values remain quarantined and are not imputed. |
-| `Phi`, `Φ` | Input | Declared internal or organizational register entering the attribution comparison. |
+| `Phi`, `Φ` | Input | Declared internal or organizational register offered to the attribution comparison. Causal Link remains fail-closed unless its source, causal construction, validity gate, outcome independence, and A0-to-E1–E5 bridge are contractually validated. |
 | `Psi_j`, `Ψ_j` | Evidence | External-response arm associated with component `j`. |
 | `mismatch` | Evidence | Local discrepancy `abs(Φ-Ψ_j)`. |
 | `mismatch_change` | Evidence | Change in mismatch from the preceding eligible row. Nonpositive values mean no new deterioration under this local contract. |

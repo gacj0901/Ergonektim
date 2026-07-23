@@ -11,7 +11,11 @@ from typing import Any, Mapping
 import numpy as np
 import pandas as pd
 
-from .contracts import ExternalDisplacement, OperatorRepresentation
+from .contracts import (
+    CausalRegisterContract,
+    ExternalDisplacement,
+    OperatorRepresentation,
+)
 from .kernel_binding import verify_prama_binding
 from .observers import (
     causal_link_status,
@@ -43,6 +47,7 @@ class AssessmentInputs:
     telemetry_valid_columns: tuple[str, ...]
     displacement: ExternalDisplacement
     phi_register: np.ndarray
+    causal_register_contract: CausalRegisterContract
     external_cause_labels: np.ndarray | None
     external_cause_labels_independent: bool | None
     operator_representation: OperatorRepresentation
@@ -181,6 +186,7 @@ def evaluate_assessment(
         inputs.displacement,
         clear,
         arrays.get("external_cause_labels"),
+        causal_register_contract=inputs.causal_register_contract,
         external_cause_labels_independent=inputs.external_cause_labels_independent,
     )
     fidelity = estimation_fidelity_status(
@@ -348,6 +354,7 @@ def evaluate_assessment(
         "input_binding": binding_record,
         "kernel_config": asdict(cfg),
         "source_contracts": {
+            "causal_register_phi": inputs.causal_register_contract.record(),
             "external_displacement": inputs.displacement.contract,
             "operator_representation": inputs.operator_representation.contract,
             "telemetric": telemetric.report["contract"],
@@ -362,7 +369,19 @@ def evaluate_assessment(
                     "w is observed and contracted for component-wise attribution; "
                     "it is not an input to Omega, Xi, A, lambda, Theta, M, or G."
                 ),
-            }
+            },
+            "causal_register_phi": {
+                "observed": True,
+                "contract_complete": bool(
+                    inputs.causal_register_contract.conformant
+                ),
+                "coupled_to_kernel_dynamics": False,
+                "observer_consumers": ["causal_link"],
+                "claim_boundary": (
+                    "Phi is an observer input, not a kernel input. Causal Link "
+                    "emits only when its A0-to-E1-E5 bridge is validated."
+                ),
+            },
         },
         "kernel_branch_coverage": kernel_branch_coverage,
         "observer_invariants": {

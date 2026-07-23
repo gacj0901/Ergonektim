@@ -9,7 +9,11 @@ from typing import Any, Sequence
 import numpy as np
 import pandas as pd
 
-from .contracts import ExternalDisplacement, OperatorRepresentation
+from .contracts import (
+    CausalRegisterContract,
+    ExternalDisplacement,
+    OperatorRepresentation,
+)
 
 
 INDETERMINATE = "instrument_indeterminate"
@@ -269,6 +273,7 @@ def causal_link_status(
     observability_clear: object,
     external_cause_labels: object | None,
     *,
+    causal_register_contract: CausalRegisterContract,
     external_cause_labels_independent: bool | None,
     tolerance: float = 1e-12,
 ) -> dict[str, Any]:
@@ -276,6 +281,10 @@ def causal_link_status(
 
     if not displacement.complete:
         raise ObserverContractError("Causal Link needs a complete displacement contract")
+    try:
+        phi_contract = causal_register_contract.record()
+    except (TypeError, ValueError) as exc:
+        raise ObserverContractError("Causal Link Phi contract is invalid") from exc
     if not math.isfinite(tolerance) or tolerance < 0.0:
         raise ObserverContractError("invalid Causal Link tolerance")
     phi = _vector("phi_register", phi_register, np.float64)
@@ -303,6 +312,42 @@ def causal_link_status(
     psi_contribution = np.full((n, components), np.nan, dtype=np.float64)
     mismatch_change = np.full((n, components), np.nan, dtype=np.float64)
     eligible = np.zeros((n, components), dtype=np.bool_)
+    if not phi_contract["observer_emission_authorized"]:
+        summaries = {
+            name: {
+                "counts": {INDETERMINATE: n},
+                "eligible_rows": 0,
+                "independent_label_matches": None,
+                "independent_label_match_fraction": None,
+            }
+            for name in displacement.component_names
+        }
+        return {
+            "component_names": displacement.component_names,
+            "status_path": status,
+            "eligible": eligible,
+            "phi_contribution": phi_contribution,
+            "psi_contribution": psi_contribution,
+            "mismatch_change": mismatch_change,
+            "summary": {
+                "components": summaries,
+                "global_scalar_emitted": False,
+                "observer_emits": False,
+                "instrument_component_explored": False,
+                "fail_closed_reason": "causal_register_phi_not_conformant",
+            },
+            "invariants": {
+                "shapley_budget_identity_within_tolerance": True,
+                "telemetric_and_external_gate_respected": True,
+                "no_component_pooling": True,
+                "attribution_does_not_require_labels": True,
+                "external_labels_independent_when_supplied": bool(
+                    labels is None or external_cause_labels_independent is True
+                ),
+                "causal_register_contract_respected": True,
+                "observer_fail_closed_without_conformant_phi": True,
+            },
+        }
     for row in range(1, n):
         for component in range(components):
             if not (
@@ -383,7 +428,13 @@ def causal_link_status(
         "phi_contribution": phi_contribution,
         "psi_contribution": psi_contribution,
         "mismatch_change": mismatch_change,
-        "summary": {"components": summaries, "global_scalar_emitted": False},
+        "summary": {
+            "components": summaries,
+            "global_scalar_emitted": False,
+            "observer_emits": True,
+            "instrument_component_explored": False,
+            "fail_closed_reason": None,
+        },
         "invariants": {
             "shapley_budget_identity_within_tolerance": exact,
             "telemetric_and_external_gate_respected": gate,
@@ -392,6 +443,8 @@ def causal_link_status(
             "external_labels_independent_when_supplied": bool(
                 labels is None or external_cause_labels_independent is True
             ),
+            "causal_register_contract_respected": True,
+            "observer_fail_closed_without_conformant_phi": True,
         },
     }
 

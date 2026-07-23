@@ -8,7 +8,7 @@ ERGONEKTIM is an auditable bilingual product that converts causal electrical obs
 
 ## Current status
 
-`0.1.0.dev0` — executable product-contract construction. No real-time operational or predictive claim is made.
+`0.1.0.dev2` — executable product-contract construction. No real-time operational or predictive claim is made.
 
 The current milestone provides:
 
@@ -18,6 +18,10 @@ The current milestone provides:
 - a [universal closed input-bundle contract](INPUT_BUNDLE.md);
 - English and Spanish status catalogs; and
 - one causal, fail-closed execution path for all six observers;
+- an explicit `Phi` custody contract that keeps Causal Link fail-closed until
+  the declared A0-to-E1–E5 bridge is validated;
+- signed, absolute-reference-relative, and fixed-scale external-displacement
+  normalizations without clipping or scalar pooling;
 - a hash-verified binding to PRAMA Protokol `0.3.0` and its numeric recertification artifact; and
 - executable parity, ledger, gating, and attribution-invariant tests.
 

@@ -68,6 +68,18 @@ class IntegratedPanelTests(unittest.TestCase):
         self.assertFalse(
             payload["observer_summaries"]["causal_link"]["global_scalar_emitted"]
         )
+        self.assertFalse(
+            payload["observer_summaries"]["causal_link"]["observer_emits"]
+        )
+        self.assertEqual(
+            payload["observer_summaries"]["causal_link"]["fail_closed_reason"],
+            "causal_register_phi_not_conformant",
+        )
+        self.assertFalse(
+            payload["source_contracts"]["causal_register_phi"][
+                "observer_emission_authorized"
+            ]
+        )
         first = payload["timeline"][0]["signals"]
         self.assertEqual(
             set(first),
