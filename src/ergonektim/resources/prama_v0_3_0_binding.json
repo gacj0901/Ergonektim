@@ -3,13 +3,13 @@
   "prama_version": "0.3.0",
   "recertification": {
     "artifact": "v0_3_0_numeric_recertification",
-    "sha256": "1be41f35ef4c3ab5230c950dfa6c0bba1c4081eef6a35801ddbf5524aa7ad7bf",
+    "sha256": "1b534add3aa6b6800a61d7e2446a1927f3b59ba23b61022816e4e7612e65d568",
     "passed": true,
     "outcomes_accessed": false
   },
   "hashes": {
     "python_kernel_v3": "b6fc160c8bd212cb2d693878ad5692a5ab38b3c988bb94db321636bf69d4075d",
     "rust_kernel_v3": "92e426c27e2588a1374743b2b3e15bc521c9e7c4f1f63e927f312499cbdef2fb",
-    "specification": "7d9826eb340bc3f46002010e21ebaecd4fd6844bbac11214dedd9e01487bf46f"
+    "specification": "b5a40488a8c2417f9f5f6cce4e556619d1ee38d437989aea7c021b2327a731c6"
   }
 }

@@ -9,6 +9,8 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 import pandas as pd
 
+from ._strict import StrictTypeError, require_boolean_fields, strict_boolean_vector
+
 
 W_CONTRACT_ID = "ergonektim.external-displacement.w.v1.1"
 PHI_CONTRACT_ID = "ergonektim.causal-register.Phi.v2"
@@ -68,6 +70,17 @@ class ExternalDisplacementChannel:
     independent_of_kernel: bool = True
 
     def validate(self) -> None:
+        try:
+            require_boolean_fields(
+                "external displacement",
+                reference_available_by_t=self.reference_available_by_t,
+                independent_of_internal_register=self.independent_of_internal_register,
+                independent_of_kernel=self.independent_of_kernel,
+            )
+        except StrictTypeError as exc:
+            raise ExternalContractError(str(exc)) from exc
+        if isinstance(self.stress_sign, (bool, np.bool_)):
+            raise ExternalContractError("stress_sign must be -1 or +1")
         text_fields = (
             self.name,
             self.observation_role,
@@ -147,6 +160,22 @@ class CausalRegisterContract:
     experimental_only: bool = True
 
     def validate(self) -> None:
+        try:
+            require_boolean_fields(
+                "causal register",
+                available_by_t=self.available_by_t,
+                source_validity_gated=self.source_validity_gated,
+                independent_of_external_displacement=(
+                    self.independent_of_external_displacement
+                ),
+                independent_of_kernel=self.independent_of_kernel,
+                outcome_inputs_used=self.outcome_inputs_used,
+                prefix_causality_certified=self.prefix_causality_certified,
+                representation_theorem_claimed=self.representation_theorem_claimed,
+                experimental_only=self.experimental_only,
+            )
+        except StrictTypeError as exc:
+            raise ExternalContractError(str(exc)) from exc
         text_fields = (
             self.source_system,
             self.source_owner,
@@ -289,6 +318,17 @@ class OperatorRepresentationContract:
     prama_variables_used: tuple[str, ...] = ()
 
     def validate(self) -> None:
+        try:
+            require_boolean_fields(
+                "operator representation",
+                dual_use_declared=self.dual_use_declared,
+                available_by_t=self.available_by_t,
+                generated_independently_from_prama=(
+                    self.generated_independently_from_prama
+                ),
+            )
+        except StrictTypeError as exc:
+            raise ExternalContractError(str(exc)) from exc
         text_fields = (
             self.source_system,
             self.source_owner,
@@ -352,10 +392,14 @@ def _float_vector(name: str, values: object, length: int) -> np.ndarray:
 
 
 def _bool_vector(name: str, values: object, length: int) -> np.ndarray:
-    array = np.asarray(values, dtype=np.bool_)
-    if array.ndim != 1 or array.size != length:
-        raise ExternalContractError(f"{name} must align with timestamps")
-    return array
+    try:
+        return strict_boolean_vector(
+            values,
+            name=name,
+            expected_length=length,
+        )
+    except StrictTypeError as exc:
+        raise ExternalContractError(str(exc)) from exc
 
 
 def _issue_vector(name: str, values: object, length: int) -> pd.DatetimeIndex:

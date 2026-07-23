@@ -11,6 +11,7 @@ from typing import Any, Mapping
 import numpy as np
 import pandas as pd
 
+from ._strict import StrictTypeError, strict_boolean_vector
 from .contracts import (
     CausalRegisterContract,
     ExternalDisplacement,
@@ -58,6 +59,15 @@ class AssessmentInputs:
 
 
 def _vector(name: str, values: object, length: int, dtype: object) -> np.ndarray:
+    if np.dtype(dtype).kind == "b":
+        try:
+            return strict_boolean_vector(
+                values,
+                name=name,
+                expected_length=length,
+            )
+        except StrictTypeError as exc:
+            raise AssessmentContractError(str(exc)) from exc
     array = np.asarray(values, dtype=dtype)
     if array.ndim != 1 or array.size != length:
         raise AssessmentContractError(f"{name} must align with assessment index")
@@ -369,7 +379,7 @@ def evaluate_assessment(
         )
 
     return {
-        "schema_version": "ergonektim.assessment.v1.2",
+        "schema_version": "ergonektim.assessment.v1.3",
         "access": {
             "outcomes_accessed": False,
             "future_values_accessed": False,
@@ -399,11 +409,20 @@ def evaluate_assessment(
                 "observed": True,
                 "instrument_complete": bool(phi.contract["instrument_complete"]),
                 "contract_complete": bool(phi.contract["complete"]),
+                "observer_emission_authorized": bool(
+                    phi.contract["observer_emission_authorized"]
+                ),
+                "representation_theorem_claimed": bool(
+                    phi.contract["metadata"]["representation_theorem_claimed"]
+                ),
                 "coupled_to_kernel_dynamics": False,
                 "observer_consumers": ["causal_link"],
                 "claim_boundary": (
                     "Phi is an observer input, not a kernel input. Causal Link "
-                    "emits only when its A0-to-E1-E5 bridge is validated."
+                    "emits only when its hash-bound level-1 operational "
+                    "conformance contract authorizes emission. A separate "
+                    "representation-theorem claim is recorded independently "
+                    "and is not an emission prerequisite."
                 ),
             },
         },

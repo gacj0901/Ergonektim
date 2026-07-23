@@ -161,7 +161,7 @@ const copy = {
     state: "Estado",
     copied: "Hash copiado",
     copyHash: "Copiar hash",
-    invalid: "El archivo no cumple el contrato mínimo de assessment.v1.2.",
+    invalid: "El archivo no cumple el contrato mínimo de assessment.v1.3.",
     access: "Acceso científico",
     outcomeFree: "Sin outcomes",
     demoNotice:
@@ -206,7 +206,7 @@ const copy = {
     state: "State",
     copied: "Hash copied",
     copyHash: "Copy hash",
-    invalid: "The file does not satisfy the minimum assessment.v1.2 contract.",
+    invalid: "The file does not satisfy the minimum assessment.v1.3 contract.",
     access: "Scientific access",
     outcomeFree: "Outcome-free",
     demoNotice:
@@ -433,7 +433,7 @@ function createDemoAssessment(): Assessment {
     { pre_margin_median: 0.32, during_margin_minimum: 0.08, post_margin_median: 0.24, restoration_per_invested_drain: 0.67 },
   );
   return {
-    schema_version: "ergonektim.assessment.v1.2",
+    schema_version: "ergonektim.assessment.v1.3",
     access: { outcomes_accessed: false, global_scalar_emitted: false },
     input_binding: {
       verified: true,
@@ -559,7 +559,7 @@ export default function Home() {
     try {
       const payload = JSON.parse(await file.text()) as Assessment;
       if (
-        payload.schema_version !== "ergonektim.assessment.v1.2" ||
+        payload.schema_version !== "ergonektim.assessment.v1.3" ||
         !Array.isArray(payload.timeline) ||
         !payload.input_binding ||
         !payload.kernel_binding ||

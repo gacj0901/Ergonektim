@@ -9,6 +9,7 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 import pandas as pd
 
+from ._strict import StrictTypeError, strict_boolean_vector
 from .contracts import (
     CausalRegisterContract,
     ExternalDisplacement,
@@ -24,6 +25,15 @@ class ObserverContractError(ValueError):
 
 
 def _vector(name: str, values: object, dtype: object) -> np.ndarray:
+    if np.dtype(dtype).kind == "b":
+        try:
+            return strict_boolean_vector(
+                values,
+                name=name,
+                require_nonempty=True,
+            )
+        except StrictTypeError as exc:
+            raise ObserverContractError(str(exc)) from exc
     array = np.asarray(values, dtype=dtype)
     if array.ndim != 1 or array.size == 0:
         raise ObserverContractError(f"{name} must be a nonempty vector")

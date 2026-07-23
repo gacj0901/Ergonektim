@@ -9,6 +9,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from ._strict import StrictTypeError, strict_boolean_vector
+
 
 SCHEMA = "ergonektim.observer.telemetric-status.v1"
 CLEAR = "observability_clear"
@@ -93,9 +95,14 @@ def propagate_causal_interval(
 
     contract.validate()
     drain = np.asarray(q, dtype=np.float64)
-    valid = np.asarray(source_valid, dtype=np.bool_)
-    if drain.ndim != 1 or drain.size == 0 or valid.shape != drain.shape:
+    if drain.ndim != 1 or drain.size == 0:
         raise TelemetricStatusError("q and source_valid must be aligned vectors")
+    try:
+        valid = strict_boolean_vector(
+            source_valid, name="source_valid", expected_length=drain.size
+        )
+    except StrictTypeError as exc:
+        raise TelemetricStatusError(str(exc)) from exc
 
     lower = np.empty(drain.size, dtype=np.float64)
     upper = np.empty(drain.size, dtype=np.float64)

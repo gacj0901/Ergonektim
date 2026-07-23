@@ -11,7 +11,7 @@ from .input_bundle import load_assessment_bundle
 from .panel import canonical_assessment_bytes, evaluate_assessment
 
 
-ASSESSMENT_SCHEMA = "ergonektim.assessment.v1.2"
+ASSESSMENT_SCHEMA = "ergonektim.assessment.v1.3"
 
 
 class ArtifactVerificationError(ValueError):

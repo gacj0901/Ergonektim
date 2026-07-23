@@ -35,7 +35,7 @@ class IntegratedPanelTests(unittest.TestCase):
             recertification_path=Path(RECERTIFICATION),
         )
         self.assertEqual(
-            payload["schema_version"], "ergonektim.assessment.v1.2"
+            payload["schema_version"], "ergonektim.assessment.v1.3"
         )
         self.assertEqual(payload["summary"]["observer_count"], 6)
         self.assertEqual(payload["summary"]["rows"], 240)
@@ -63,6 +63,14 @@ class IntegratedPanelTests(unittest.TestCase):
         self.assertTrue(w_boundary["observed"])
         self.assertFalse(w_boundary["coupled_to_kernel_dynamics"])
         self.assertEqual(w_boundary["observer_consumers"], ["causal_link"])
+        phi_boundary = payload["dynamics_boundary"]["causal_register_phi"]
+        self.assertFalse(phi_boundary["observer_emission_authorized"])
+        self.assertFalse(phi_boundary["representation_theorem_claimed"])
+        self.assertNotIn("A0-to-E1-E5", phi_boundary["claim_boundary"])
+        self.assertIn(
+            "operational conformance contract",
+            phi_boundary["claim_boundary"],
+        )
         self.assertEqual(len(payload["condition_report"]), 2)
         self.assertEqual(
             set(payload["observer_summaries"]),

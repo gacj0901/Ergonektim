@@ -8,7 +8,7 @@ ERGONEKTIM es un producto auditable que convierte observaciones eléctricas caus
 
 ## Estatus actual
 
-`0.1.0.dev3` — construcción ejecutable del contrato de producto. No se formula ninguna afirmación predictiva ni de operación en tiempo real.
+`0.1.0.dev4` — construcción ejecutable del contrato de producto con fronteras booleanas estrictas. No se formula ninguna afirmación predictiva ni de operación en tiempo real.
 
 El hito actual proporciona:
 
@@ -73,7 +73,7 @@ diferencia byte a byte frente a la réplica determinista.
 
 ## Sala de evaluación
 
-El directorio [`dashboard`](dashboard/) contiene la sala de evaluación orientada al producto. Consume íntegramente en el navegador un artefacto `ergonektim.assessment.v1.2` ya terminado y proporciona:
+El directorio [`dashboard`](dashboard/) contiene la sala de evaluación orientada al producto. Consume íntegramente en el navegador un artefacto `ergonektim.assessment.v1.3` ya terminado y proporciona:
 
 - lecturas separadas de los seis observadores;
 - custodia de entrada, kernel y recertificación;

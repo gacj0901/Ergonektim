@@ -8,7 +8,7 @@ ERGONEKTIM is an auditable product that converts causal electrical observations 
 
 ## Current status
 
-`0.1.0.dev3` — executable product-contract construction. No real-time operational or predictive claim is made.
+`0.1.0.dev4` — executable product-contract construction with strict boolean boundaries. No real-time operational or predictive claim is made.
 
 The current milestone provides:
 
@@ -73,7 +73,7 @@ byte-level difference from the deterministic replay.
 
 ## Assessment room
 
-The [`dashboard`](dashboard/) directory contains the product-facing assessment room. It consumes a completed `ergonektim.assessment.v1.2` artifact entirely in the browser and provides:
+The [`dashboard`](dashboard/) directory contains the product-facing assessment room. It consumes a completed `ergonektim.assessment.v1.3` artifact entirely in the browser and provides:
 
 - separate readings for all six observers;
 - input, kernel, and recertification custody;

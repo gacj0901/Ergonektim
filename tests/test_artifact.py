@@ -15,7 +15,7 @@ from ergonektim.panel import canonical_assessment_bytes
 class ArtifactContractTests(unittest.TestCase):
     def test_canonical_artifact_loads(self) -> None:
         payload = {
-            "schema_version": "ergonektim.assessment.v1.2",
+            "schema_version": "ergonektim.assessment.v1.3",
             "summary": {"rows": 1},
         }
         with tempfile.TemporaryDirectory() as temporary:
@@ -27,7 +27,7 @@ class ArtifactContractTests(unittest.TestCase):
 
     def test_pretty_printed_or_nonfinite_artifact_is_rejected(self) -> None:
         payload = {
-            "schema_version": "ergonektim.assessment.v1.2",
+            "schema_version": "ergonektim.assessment.v1.3",
             "summary": {"rows": 1},
         }
         with tempfile.TemporaryDirectory() as temporary:
@@ -38,7 +38,7 @@ class ArtifactContractTests(unittest.TestCase):
             ):
                 load_canonical_assessment(path)
             path.write_text(
-                '{"schema_version":"ergonektim.assessment.v1.2","x":NaN}\n',
+                '{"schema_version":"ergonektim.assessment.v1.3","x":NaN}\n',
                 encoding="utf-8",
             )
             with self.assertRaisesRegex(ArtifactVerificationError, "non-finite"):

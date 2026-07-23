@@ -11,6 +11,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from .._strict import StrictTypeError, strict_boolean_vector
 from ..observers import condition_report
 
 
@@ -161,17 +162,18 @@ def circular_shift_condition_reference(
 
     design.validate()
     timeline = pd.DatetimeIndex(index)
-    plan = np.asarray(planned, dtype=np.bool_)
     m = np.asarray(margin, dtype=np.float64)
-    clear = np.asarray(observability_clear, dtype=np.bool_)
     n = len(timeline)
-    if (
-        n == 0
-        or plan.ndim != 1
-        or m.ndim != 1
-        or clear.ndim != 1
-        or not (plan.size == m.size == clear.size == n)
-    ):
+    try:
+        plan = strict_boolean_vector(planned, name="planned", expected_length=n)
+        clear = strict_boolean_vector(
+            observability_clear,
+            name="observability_clear",
+            expected_length=n,
+        )
+    except StrictTypeError as exc:
+        raise ConditionNullContractError(str(exc)) from exc
+    if n == 0 or m.ndim != 1 or m.size != n:
         raise ConditionNullContractError(
             "index, planned, margin, and observability must be aligned "
             "nonempty vectors"
