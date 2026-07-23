@@ -119,6 +119,11 @@
           "label": "Regeneración dominante",
           "explanation": "La regeneración declarada supera el drenaje estructural.",
           "review_action": "Verificar que el balance favorable persista y esté respaldado por datos de fuente válidos."
+        },
+        "structural_ledger_inactive": {
+          "label": "Libro mayor estructural inactivo",
+          "explanation": "El drenaje estructural y la regeneración declarados son cero; esta fila no contiene una comparación de solvencia.",
+          "review_action": "Tratarlo como información de cobertura de rama, no como evidencia de balance neutro."
         }
       }
     },
@@ -136,15 +141,15 @@
           "explanation": "El gate de observabilidad no permite inferir el estado de estabilidad.",
           "review_action": "Restaurar cobertura suficiente antes de interpretar el margen o la tendencia."
         },
-        "latent_collapse": {
-          "label": "Deterioro latente",
-          "explanation": "El margen permanece no negativo, pero su tendencia causal se deteriora.",
-          "review_action": "Revisar la persistencia de la tendencia y los canales que contribuyen a la tensión retenida."
-        },
         "viable": {
           "label": "Margen viable",
           "explanation": "El margen es no negativo y su tendencia causal no se deteriora.",
           "review_action": "Continuar vigilando; un estado actual favorable no implica ausencia de riesgo futuro."
+        },
+        "viable_with_negative_gradient": {
+          "label": "Margen viable con gradiente negativo",
+          "explanation": "El margen permanece no negativo y el gradiente causal actual es negativo; no se aplicó umbral de magnitud ni persistencia.",
+          "review_action": "Examinar magnitud y persistencia por separado; este estado basado solo en signo no es una alarma de colapso."
         }
       }
     },

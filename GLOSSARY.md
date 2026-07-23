@@ -160,10 +160,11 @@ Fidelity measures agreement with a declared external representation. It does not
 | Telemetric Status | `partially_observable_fail_closed` | Partial coverage | Some intervals are eligible and others remain quarantined. |
 | Telemetric Status | `instrument_indeterminate` | Insufficient visibility | Evidence does not support downstream state inference. |
 | Stability Status | `viable` | Viable margin | `σ_op=1`, `M>=0`, and `G>=0`. This is not a theorem of global stability. |
-| Stability Status | `latent_collapse` | Latent deterioration | `σ_op=1`, `M>=0`, and `G<0`: margin remains nonnegative but is deteriorating. |
+| Stability Status | `viable_with_negative_gradient` | Viable margin with negative gradient | `σ_op=1`, `M>=0`, and `G<0`. This is a sign-only reading without a magnitude or persistence threshold; it is not a collapse alarm. |
 | Stability Status | `collapsing` | Compromised viability | `M<0` or the declared operational mask is inactive on an otherwise observable row. |
 | Performance Status | `solvent` | Regeneration-dominant | Regeneration exceeds structural drain. |
 | Performance Status | `balanced` | Neutral balance | Regeneration and structural drain are equal. |
+| Performance Status | `structural_ledger_inactive` | Structural ledger inactive | Regeneration and structural drain are both zero. This reports branch coverage, not balance evidence. |
 | Performance Status | `insolvent` | Drain-dominant | Structural drain exceeds regeneration. |
 | Performance Status | `overoptimization_guard_triggered` | Over-optimization alert | Effective flow increased while viability margin decreased. |
 | Condition Report | `regenerative` | Regenerative intervention | Post-episode median margin exceeds its pre-episode value. |

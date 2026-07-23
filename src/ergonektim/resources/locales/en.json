@@ -119,6 +119,11 @@
           "label": "Regeneration-dominant",
           "explanation": "Declared regeneration exceeds structural drain.",
           "review_action": "Verify that the favorable balance persists and is supported by valid source data."
+        },
+        "structural_ledger_inactive": {
+          "label": "Structural ledger inactive",
+          "explanation": "Both declared structural drain and regeneration are zero; this row contains no solvency comparison.",
+          "review_action": "Treat this as branch-coverage information, not as evidence of neutral balance."
         }
       }
     },
@@ -136,15 +141,15 @@
           "explanation": "The observability gate does not support a stability-status inference.",
           "review_action": "Restore sufficient coverage before interpreting margin or trend."
         },
-        "latent_collapse": {
-          "label": "Latent deterioration",
-          "explanation": "The margin remains nonnegative but its causal trend is deteriorating.",
-          "review_action": "Review trend persistence and the channels contributing to retained tension."
-        },
         "viable": {
           "label": "Viable margin",
           "explanation": "The margin is nonnegative and its causal trend is not deteriorating.",
           "review_action": "Continue monitoring; a favorable current state does not imply absence of future risk."
+        },
+        "viable_with_negative_gradient": {
+          "label": "Viable margin with negative gradient",
+          "explanation": "The margin remains nonnegative and the current causal gradient is negative; no magnitude or persistence threshold has been applied.",
+          "review_action": "Inspect magnitude and persistence separately; this sign-only state is not a collapse alarm."
         }
       }
     },

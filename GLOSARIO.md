@@ -160,10 +160,11 @@ La fidelidad mide concordancia con una representación externa declarada. No est
 | Telemetric Status | `partially_observable_fail_closed` | Cobertura parcial | Algunos intervalos son elegibles y otros permanecen en cuarentena. |
 | Telemetric Status | `instrument_indeterminate` | Visibilidad insuficiente | La evidencia no permite inferencia posterior de estado. |
 | Stability Status | `viable` | Margen viable | `σ_op=1`, `M>=0` y `G>=0`. No es un teorema de estabilidad global. |
-| Stability Status | `latent_collapse` | Deterioro latente | `σ_op=1`, `M>=0` y `G<0`: el margen sigue no negativo, pero se deteriora. |
+| Stability Status | `viable_with_negative_gradient` | Margen viable con gradiente negativo | `σ_op=1`, `M>=0` y `G<0`. Es una lectura basada solo en el signo, sin umbral de magnitud o persistencia; no es una alarma de colapso. |
 | Stability Status | `collapsing` | Viabilidad comprometida | `M<0` o la máscara operacional declarada está inactiva en una fila observable. |
 | Performance Status | `solvent` | Regeneración dominante | La regeneración supera el drenaje estructural. |
 | Performance Status | `balanced` | Balance neutro | Regeneración y drenaje estructural son iguales. |
+| Performance Status | `structural_ledger_inactive` | Libro mayor estructural inactivo | Regeneración y drenaje estructural son ambos cero. Informa cobertura de rama, no evidencia de balance. |
 | Performance Status | `insolvent` | Drenaje dominante | El drenaje estructural supera la regeneración. |
 | Performance Status | `overoptimization_guard_triggered` | Alerta de sobreoptimización | El flujo efectivo aumentó mientras el margen de viabilidad disminuyó. |
 | Condition Report | `regenerative` | Intervención regenerativa | La mediana posterior supera su valor anterior al episodio. |

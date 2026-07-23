@@ -34,6 +34,8 @@ The telemetry section declares one or more source-validity columns and the compl
 
 `external_displacement.components` is a nonempty list. Every component independently declares:
 
+The resulting \(w\) register is observed and contracted for component-wise Causal Link attribution. In the current product contract it is not coupled to the kernel dynamics \((\Omega,\Xi,\mathcal{A},\lambda,\Theta,M,G)\). Assessment artifacts expose this boundary explicitly; a future coupling requires a separately preregistered model.
+
 - observation and reference roles;
 - normalization and stress sign;
 - source system and owner;

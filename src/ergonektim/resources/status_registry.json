@@ -110,6 +110,11 @@
           "severity": "favorable",
           "signal": "green",
           "icon": "check-circle"
+        },
+        "structural_ledger_inactive": {
+          "severity": "informational",
+          "signal": "blue",
+          "icon": "pause-circle"
         }
       }
     },
@@ -125,15 +130,15 @@
           "signal": "gray",
           "icon": "help-circle"
         },
-        "latent_collapse": {
-          "severity": "attention",
-          "signal": "amber",
-          "icon": "alert-triangle"
-        },
         "viable": {
           "severity": "favorable",
           "signal": "green",
           "icon": "check-circle"
+        },
+        "viable_with_negative_gradient": {
+          "severity": "informational",
+          "signal": "blue",
+          "icon": "trending-down"
         }
       }
     },

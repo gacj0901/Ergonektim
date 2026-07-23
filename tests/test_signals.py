@@ -54,7 +54,7 @@ class DiagnosticSignalTests(unittest.TestCase):
     def test_language_switch_does_not_change_scientific_payload(self) -> None:
         signal = build_diagnostic_signal(
             "stability_status",
-            "latent_collapse",
+            "viable_with_negative_gradient",
             eligible=True,
             timestamp_utc="2026-07-21T12:00:00Z",
             evidence={"M": 0.18, "G": -0.03},

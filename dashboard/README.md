@@ -1,7 +1,7 @@
 # ERGONEKTIM Assessment Room
 
 A bilingual, product-facing reader for completed
-`ergonektim.assessment.v1` artifacts.
+`ergonektim.assessment.v1.1` artifacts.
 
 The assessment room presents the six ERGONEKTIM observers independently,
 preserves input/kernel/recertification custody, and exposes the structural
@@ -36,7 +36,7 @@ client-side operation.
 # Sala de evaluación ERGONEKTIM
 
 Lector bilingüe orientado a producto para artefactos
-`ergonektim.assessment.v1` terminados.
+`ergonektim.assessment.v1.1` terminados.
 
 La sala presenta por separado los seis observadores de ERGONEKTIM, conserva la
 custodia de entrada/kernel/recertificación y permite inspeccionar la trayectoria

@@ -56,7 +56,7 @@ El comando escribe un único artefacto JSON determinista que contiene la custodi
 
 ## Sala bilingüe de evaluación
 
-El directorio [`dashboard`](dashboard/) contiene la sala de evaluación orientada al producto. Consume íntegramente en el navegador un artefacto `ergonektim.assessment.v1` ya terminado y proporciona:
+El directorio [`dashboard`](dashboard/) contiene la sala de evaluación orientada al producto. Consume íntegramente en el navegador un artefacto `ergonektim.assessment.v1.1` ya terminado y proporciona:
 
 - lecturas separadas de los seis observadores;
 - custodia de entrada, kernel y recertificación;

@@ -45,7 +45,7 @@ def stability_status(
     gradient: object,
     observability_clear: object,
 ) -> dict[str, Any]:
-    """Classify viable margin, latent deterioration, or compromised viability."""
+    """Classify current viability and the sign of its causal gradient."""
 
     arrays = _aligned_float_vectors(margin=margin, gradient=gradient)
     sigma = _vector("sigma_op", sigma_op, np.bool_)
@@ -56,13 +56,17 @@ def stability_status(
     g = arrays["gradient"]
     status = np.full(m.size, INDETERMINATE, dtype=object)
     compromised = clear & ((m < 0.0) | ~sigma)
-    latent = clear & sigma & (m >= 0.0) & (g < 0.0)
+    viable_negative_gradient = clear & sigma & (m >= 0.0) & (g < 0.0)
     viable = clear & sigma & (m >= 0.0) & (g >= 0.0)
     status[compromised] = "collapsing"
-    status[latent] = "latent_collapse"
+    status[viable_negative_gradient] = "viable_with_negative_gradient"
     status[viable] = "viable"
     gate = bool(np.all(status[~clear] == INDETERMINATE))
-    exact = bool(np.array_equal(status == "latent_collapse", latent))
+    exact = bool(
+        np.array_equal(
+            status == "viable_with_negative_gradient", viable_negative_gradient
+        )
+    )
     if not gate or not exact:
         raise RuntimeError("Stability Status invariant failure")
     return {
@@ -76,7 +80,7 @@ def stability_status(
         },
         "invariants": {
             "telemetric_gate_respected": gate,
-            "latent_definition_exact": exact,
+            "negative_gradient_definition_exact": exact,
         },
     }
 
@@ -114,7 +118,10 @@ def performance_status(
     margin_change = np.r_[0.0, np.diff(arrays["margin"])]
     overoptimized = clear & (flow_change > 0.0) & (margin_change < 0.0)
     status = np.full(clear.size, INDETERMINATE, dtype=object)
-    status[clear & (net == 0.0)] = "balanced"
+    inactive = clear & (drain == 0.0) & (regeneration == 0.0)
+    balanced = clear & (net == 0.0) & ~inactive
+    status[inactive] = "structural_ledger_inactive"
+    status[balanced] = "balanced"
     status[clear & (net > 0.0)] = "solvent"
     status[clear & (net < 0.0)] = "insolvent"
     status[overoptimized] = "overoptimization_guard_triggered"
@@ -125,7 +132,18 @@ def performance_status(
     guard = bool(
         np.array_equal(status == "overoptimization_guard_triggered", overoptimized)
     )
-    if not gate or not guard or not np.array_equal(net, regeneration - drain):
+    inactive_exact = bool(
+        np.array_equal(
+            (status == "structural_ledger_inactive") & ~overoptimized,
+            inactive & ~overoptimized,
+        )
+    )
+    if (
+        not gate
+        or not guard
+        or not inactive_exact
+        or not np.array_equal(net, regeneration - drain)
+    ):
         raise RuntimeError("Performance Status invariant failure")
     return {
         "status_path": status,
@@ -140,6 +158,7 @@ def performance_status(
         "invariants": {
             "telemetric_gate_respected": gate,
             "anti_overoptimization_guard_exact": guard,
+            "inactive_ledger_definition_exact": inactive_exact,
             "ledger_identity_exact": True,
         },
     }

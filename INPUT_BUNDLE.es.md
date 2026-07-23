@@ -34,6 +34,8 @@ La sección de telemetría declara una o más columnas de validez de fuente y el
 
 `external_displacement.components` es una lista no vacía. Cada componente declara de manera independiente:
 
+El registro \(w\) resultante se observa y se contrata para la atribución por componente de Enlace Causal. En el contrato actual del producto no está acoplado a la dinámica del kernel \((\Omega,\Xi,\mathcal{A},\lambda,\Theta,M,G)\). Los artefactos de evaluación exponen esta frontera de forma explícita; un acoplamiento futuro requiere un modelo preregistrado por separado.
+
 - roles de observación y referencia;
 - normalización y signo de estrés;
 - sistema y propietario de la fuente;

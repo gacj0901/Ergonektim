@@ -34,11 +34,25 @@ class IntegratedPanelTests(unittest.TestCase):
             telemetric_contract=telemetric_contract,
             recertification_path=Path(RECERTIFICATION),
         )
+        self.assertEqual(
+            payload["schema_version"], "ergonektim.assessment.v1.1"
+        )
         self.assertEqual(payload["summary"]["observer_count"], 6)
         self.assertEqual(payload["summary"]["rows"], 240)
         self.assertTrue(payload["summary"]["single_process_run"])
         self.assertTrue(payload["summary"]["bilingual_presentations_embedded"])
         self.assertFalse(payload["summary"]["global_scalar_emitted"])
+        self.assertIn("regulatory_branch_exercised", payload["summary"])
+        regulatory = payload["kernel_branch_coverage"]["regulatory_A_lambda"]
+        self.assertEqual(regulatory["rows"], payload["summary"]["rows"])
+        self.assertEqual(
+            regulatory["exercised"],
+            payload["summary"]["regulatory_branch_exercised"],
+        )
+        w_boundary = payload["dynamics_boundary"]["external_displacement_w"]
+        self.assertTrue(w_boundary["observed"])
+        self.assertFalse(w_boundary["coupled_to_kernel_dynamics"])
+        self.assertEqual(w_boundary["observer_consumers"], ["causal_link"])
         self.assertEqual(len(payload["condition_report"]), 2)
         self.assertEqual(
             set(payload["observer_summaries"]),

@@ -186,6 +186,32 @@ def evaluate_assessment(
     fidelity = estimation_fidelity_status(
         inputs.operator_representation, gamma.xi, gamma.theta, clear
     )
+    exceedance_active = gamma.xi > gamma.theta
+    accumulated_debt_active = gamma.A > 0.0
+    regulatory_drain_active = cfg.kappa_v3 * cfg.h * gamma.A > 0.0
+    lambda_changed = gamma.lambda_ != cfg.lambda_0
+    regulatory_branch_exercised = bool(accumulated_debt_active.any())
+    kernel_branch_coverage = {
+        "regulatory_A_lambda": {
+            "xi_maximum": float(np.max(gamma.xi)),
+            "theta_minimum": float(np.min(gamma.theta)),
+            "theta_maximum": float(np.max(gamma.theta)),
+            "accumulated_debt_maximum": float(np.max(gamma.A)),
+            "lambda_minimum": float(np.min(gamma.lambda_)),
+            "lambda_maximum": float(np.max(gamma.lambda_)),
+            "exceedance_active_rows": int(exceedance_active.sum()),
+            "accumulated_debt_active_rows": int(accumulated_debt_active.sum()),
+            "regulatory_drain_active_rows": int(regulatory_drain_active.sum()),
+            "lambda_changed_from_initial_rows": int(lambda_changed.sum()),
+            "rows": len(index),
+            "exercised": regulatory_branch_exercised,
+            "interpretation": (
+                "regulatory_branch_exercised"
+                if regulatory_branch_exercised
+                else "regulatory_branch_not_exercised"
+            ),
+        }
+    }
 
     timeline: list[dict[str, Any]] = []
     for row, timestamp in enumerate(index):
@@ -312,7 +338,7 @@ def evaluate_assessment(
         )
 
     return {
-        "schema_version": "ergonektim.assessment.v1",
+        "schema_version": "ergonektim.assessment.v1.1",
         "access": {
             "outcomes_accessed": False,
             "future_values_accessed": False,
@@ -326,6 +352,19 @@ def evaluate_assessment(
             "operator_representation": inputs.operator_representation.contract,
             "telemetric": telemetric.report["contract"],
         },
+        "dynamics_boundary": {
+            "external_displacement_w": {
+                "observed": True,
+                "contract_complete": bool(inputs.displacement.complete),
+                "coupled_to_kernel_dynamics": False,
+                "observer_consumers": ["causal_link"],
+                "claim_boundary": (
+                    "w is observed and contracted for component-wise attribution; "
+                    "it is not an input to Omega, Xi, A, lambda, Theta, M, or G."
+                ),
+            }
+        },
+        "kernel_branch_coverage": kernel_branch_coverage,
         "observer_invariants": {
             "telemetric_status": telemetric.report["invariants"],
             "stability_status": stability["invariants"],
@@ -354,6 +393,7 @@ def evaluate_assessment(
             "single_process_run": True,
             "bilingual_presentations_embedded": True,
             "global_scalar_emitted": False,
+            "regulatory_branch_exercised": regulatory_branch_exercised,
         },
     }
 

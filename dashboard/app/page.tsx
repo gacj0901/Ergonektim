@@ -134,7 +134,7 @@ const copy = {
     state: "Estado",
     copied: "Hash copiado",
     copyHash: "Copiar hash",
-    invalid: "El archivo no cumple el contrato mínimo de assessment.v1.",
+    invalid: "El archivo no cumple el contrato mínimo de assessment.v1.1.",
     access: "Acceso científico",
     outcomeFree: "Sin outcomes",
     bilingual: "ES + EN embebidos",
@@ -180,7 +180,7 @@ const copy = {
     state: "State",
     copied: "Hash copied",
     copyHash: "Copy hash",
-    invalid: "The file does not satisfy the minimum assessment.v1 contract.",
+    invalid: "The file does not satisfy the minimum assessment.v1.1 contract.",
     access: "Scientific access",
     outcomeFree: "Outcome-free",
     bilingual: "ES + EN embedded",
@@ -202,9 +202,9 @@ const statusText: Record<string, Record<Locale, [string, string, string]>> = {
     es: ["Viable", "El margen es no negativo y no presenta deriva descendente.", "Mantener seguimiento causal."],
     en: ["Viable", "Margin is nonnegative without downward drift.", "Maintain causal monitoring."],
   },
-  latent_collapse: {
-    es: ["Colapso latente", "El margen aún es no negativo, pero G es negativo.", "Examinar la deriva antes de cruzar el margen."],
-    en: ["Latent collapse", "Margin remains nonnegative while G is negative.", "Examine drift before the margin is crossed."],
+  viable_with_negative_gradient: {
+    es: ["Margen viable con gradiente negativo", "El margen es no negativo y G es negativo; no se aplicó umbral de magnitud o persistencia.", "Examinar magnitud y persistencia por separado."],
+    en: ["Viable margin with negative gradient", "Margin is nonnegative and G is negative; no magnitude or persistence threshold was applied.", "Inspect magnitude and persistence separately."],
   },
   collapsing: {
     es: ["Viabilidad comprometida", "El margen estructural cruzó la frontera.", "Escalar revisión humana inmediata."],
@@ -217,6 +217,10 @@ const statusText: Record<string, Record<Locale, [string, string, string]>> = {
   balanced: {
     es: ["Balance neutro", "Regeneración y drenaje se equilibran.", "Observar cambios de régimen."],
     en: ["Neutral balance", "Regeneration and drain are balanced.", "Watch for regime changes."],
+  },
+  structural_ledger_inactive: {
+    es: ["Libro mayor estructural inactivo", "Drenaje y regeneración son cero; no existe comparación de solvencia.", "Tratarlo como cobertura de rama, no como balance."],
+    en: ["Structural ledger inactive", "Drain and regeneration are zero; no solvency comparison exists.", "Treat this as branch coverage, not balance."],
   },
   insolvent: {
     es: ["Regeneración insuficiente", "El drenaje supera la regeneración declarada.", "Revisar capacidad de restitución."],
@@ -322,8 +326,8 @@ function createDemoAssessment(): Assessment {
     const previous = 0.34 + Math.sin((index - 1) / 8) * 0.17 - Math.max(index - 49, 0) * 0.012;
     const G = index === 0 ? 0 : M - previous;
     const telemetryCode = index === 23 ? "instrument_indeterminate" : "observability_clear";
-    const stabilityCode = M < 0 ? "collapsing" : G < -0.008 ? "latent_collapse" : "viable";
-    const performanceCode = index > 58 ? "insolvent" : index % 16 < 4 ? "balanced" : "solvent";
+    const stabilityCode = M < 0 ? "collapsing" : G < 0 ? "viable_with_negative_gradient" : "viable";
+    const performanceCode = index > 58 ? "insolvent" : index % 16 < 4 ? "structural_ledger_inactive" : "solvent";
     const fidelityCode = index > 62 ? "critical_self_image" : "faithful_self_image";
     const causalCode = index > 51 ? "psi_environmental" : index > 34 ? "phi_internal" : "no_new_deterioration";
     return {
@@ -346,7 +350,7 @@ function createDemoAssessment(): Assessment {
         stability_status: diagnostic(
           "stability_status",
           stabilityCode,
-          stabilityCode === "collapsing" ? "critical" : stabilityCode === "latent_collapse" ? "attention" : "favorable",
+          stabilityCode === "collapsing" ? "critical" : stabilityCode === "viable_with_negative_gradient" ? "informational" : "favorable",
           timestamp,
           { M, G, sigma_op: true },
         ),
@@ -404,7 +408,7 @@ function createDemoAssessment(): Assessment {
     { pre_margin_median: 0.32, during_margin_minimum: 0.08, post_margin_median: 0.24, restoration_per_invested_drain: 0.67 },
   );
   return {
-    schema_version: "ergonektim.assessment.v1",
+    schema_version: "ergonektim.assessment.v1.1",
     access: { outcomes_accessed: false, global_scalar_emitted: false },
     input_binding: {
       verified: true,
@@ -532,7 +536,7 @@ export default function Home() {
     try {
       const payload = JSON.parse(await file.text()) as Assessment;
       if (
-        payload.schema_version !== "ergonektim.assessment.v1" ||
+        payload.schema_version !== "ergonektim.assessment.v1.1" ||
         !Array.isArray(payload.timeline) ||
         !payload.input_binding ||
         !payload.kernel_binding ||

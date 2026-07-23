@@ -56,7 +56,7 @@ The command writes one deterministic JSON artifact containing input custody, the
 
 ## Bilingual assessment room
 
-The [`dashboard`](dashboard/) directory contains the product-facing assessment room. It consumes a completed `ergonektim.assessment.v1` artifact entirely in the browser and provides:
+The [`dashboard`](dashboard/) directory contains the product-facing assessment room. It consumes a completed `ergonektim.assessment.v1.1` artifact entirely in the browser and provides:
 
 - separate readings for all six observers;
 - input, kernel, and recertification custody;
